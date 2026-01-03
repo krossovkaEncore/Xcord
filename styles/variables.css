@@ -1,0 +1,103 @@
+:root {
+    /* Colors - Dark Red Palette */
+    --bg-primary: #1e0505;
+    /* Deepest background (Chat area) */
+    --bg-secondary: #2b0a0a;
+    /* Middle sidebar */
+    --bg-tertiary: #130303;
+    /* Left sidebar / Navigation */
+    --bg-modifier-hover: rgba(255, 51, 51, 0.08);
+    --bg-modifier-active: rgba(255, 51, 51, 0.16);
+
+    --header-primary: #ffffff;
+    --header-secondary: #b9bbbe;
+    --text-normal: #dcddde;
+    --text-muted: #72767d;
+
+    --accent-primary: #af1d1d;
+    /* Brand Red */
+    --accent-hover: #ff3333;
+
+    --channel-textarea-background: #2b0a0a;
+    --background-floating: #18191c;
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 24px;
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    /* Spacing & Sizes */
+    --sidebar-width: 72px;
+    --channels-width: 240px;
+
+    /* Fonts */
+    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Smooth color transitions for theme changes */
+* {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+
+/* Prevent transition on page load */
+.no-transition * {
+    transition: none !important;
+}
+
+/* Light Theme (Dark Gray / Silver) */
+body.theme-light {
+    --bg-primary: #a8a8a8;
+    /* Much darker gray for main */
+    --bg-secondary: #c0c0c0;
+    /* Silver for sidebars */
+    --bg-tertiary: #909090;
+    /* Darker navigation */
+    --bg-modifier-hover: rgba(0, 0, 0, 0.1);
+    --bg-modifier-active: rgba(0, 0, 0, 0.2);
+
+    --header-primary: #0a0a0a;
+    --header-secondary: #2a2a2a;
+    --text-normal: #1a1a1a;
+    --text-muted: #3a3a3a;
+
+    --accent-primary: #d42020;
+    /* Darker red for contrast */
+    --channel-textarea-background: #d8d8d8;
+    --background-floating: #d8d8d8;
+}
+
+/* 1. Navigation Rail (Left) - REMOVED */
+/* .nav-rail { display: none; } */
+
+/* 2. Chat List (Middle) now becomes the first column */
+.chat-list-sidebar {
+    width: 300px;
+    /* Slightly wider since it's the main nav now? Or keep 240. Let's try 280. */
+    background-color: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-normal);
+    font-family: var(--font-primary);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+}

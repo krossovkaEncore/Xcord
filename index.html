@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xcord</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/variables.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/profile.css">
+    <link rel="stylesheet" href="styles/settings.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- 1. LEFT: Navigation Rail REMOVED per user request -->
+        <!-- The Chat List Sidebar is now the first column -->
+
+        <!-- 2. MIDDLE: Chat List -->
+        <aside class="chat-list-sidebar">
+            <div class="chat-list-header">
+                <!-- Burger + Search Container -->
+                <div class="search-container">
+                    <div class="burger-menu-btn" id="burger-btn">
+                        <i data-lucide="menu"></i>
+                    </div>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search">
+                    </div>
+
+                    <!-- Dropdown Content -->
+                    <div class="dropdown-menu" id="main-menu">
+                        <!-- Folders / Modes moved here -->
+                        <div class="dropdown-header-custom">Folders</div>
+                        <div class="dropdown-item folder-select" data-filter="all">
+                            <i data-lucide="layers"></i>
+                            <span>All Chats</span>
+                        </div>
+                        <div class="dropdown-item folder-select" data-filter="personal">
+                            <i data-lucide="user"></i>
+                            <span>Personal</span>
+                        </div>
+                        <div class="dropdown-item folder-select" data-filter="groups">
+                            <i data-lucide="users"></i>
+                            <span>Groups</span>
+                        </div>
+                        <div class="dropdown-item folder-select" data-filter="channels">
+                            <i data-lucide="tv"></i>
+                            <span>Channels</span>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <div class="dropdown-item" id="menu-open-profile">
+                            <i data-lucide="user-circle"></i>
+                            <span>My Profile</span>
+                        </div>
+                        <div class="dropdown-item">
+                            <i data-lucide="users-2"></i>
+                            <span>Contacts</span>
+                        </div>
+                        <div class="dropdown-item" id="open-settings">
+                            <i data-lucide="settings"></i>
+                            <span>Settings</span>
+                        </div>
+                        <div class="dropdown-item" id="theme-toggle">
+                            <i data-lucide="moon"></i>
+                            <span>Изменить режим</span>
+                            <div style="margin-left:auto;">
+                                <div class="theme-indicator" id="theme-indicator"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Filters Tab -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active">All</button>
+                    <button class="filter-tab">Personal</button>
+                    <button class="filter-tab">Groups</button>
+                    <button class="filter-tab">Channels</button>
+                </div>
+            </div>
+
+            <div class="chat-list-content">
+                <!-- Pinned Chats -->
+                <div class="list-section-header">
+                    <i data-lucide="pin" size="12"></i> <span>Pinned</span>
+                </div>
+                <div class="chat-item pinned">
+                    <div class="avatar-wrapper">
+                        <!-- Since we have a spritesheet/one image, we will just use it for now or use a placeholder that works. 
+                              The user wants "generated" avatars. I will use the one I copied. 
+                              Realistically, cutting sprites in CSS is complex without classes. 
+                              I'll just point to the file for now and maybe suggest splitting it later, 
+                              or just use the large image and let object-fit cover a piece of it (hacky but works for demo). 
+                              Better: Use the file as background-image or just distinct placeholders if I had them. 
+                              Let's stick to the generated file for 'Saved Messages' and a different one for others.
+                        -->
+                        <img src="assets/avatars/default_set.png" alt="Avatar" class="avatar"
+                            style="object-fit: cover; object-position: 0 0;">
+                        <div class="status-indicator online"></div>
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name-row">
+                            <span class="chat-name">Saved Messages</span>
+                            <span class="chat-time">12:30</span>
+                        </div>
+                        <div class="chat-preview">
+                            <span class="preview-text">Note to self...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spacer / Divider -->
+                <div class="list-divider"></div>
+
+                <!-- Regular Chats -->
+                <div class="chat-item active">
+                    <div class="avatar-wrapper">
+                        <!-- Taking a different part of the generated image -->
+                        <img src="assets/avatars/default_set.png" alt="Avatar" class="avatar"
+                            style="object-fit: cover; object-position: 100% 0;">
+                        <div class="status-indicator dnd"></div>
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name-row">
+                            <span class="chat-name">Durov's Channel</span>
+                            <span class="chat-time">12:25</span>
+                        </div>
+                        <div class="chat-preview">
+                            <span class="preview-text">Telegram is updating...</span>
+                            <div class="unread-badge">2</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 3. RIGHT: Main Chat Area -->
+        <main class="chat-main">
+            <!-- Header -->
+            <header class="chat-header">
+                <div class="header-left">
+                    <i data-lucide="at-sign" class="header-icon"></i>
+                    <div class="header-text">
+                        <h3>Durov's Channel</h3>
+                        <span class="header-status">1.2M subscribers</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <i data-lucide="phone" class="action-icon"></i>
+                    <i data-lucide="video" class="action-icon"></i>
+                    <i data-lucide="search" class="action-icon"></i>
+                    <i data-lucide="panel-right" class="action-icon" id="toggle-profile"></i>
+                </div>
+            </header>
+
+            <!-- Messages -->
+            <div class="messages-container">
+                <!-- Start of conversation -->
+
+                <!-- Message Group -->
+                <div class="message-group">
+                    <div class="message-avatar">
+                        <img src="https://via.placeholder.com/40" alt="Only">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="username">Pavel Durov</span>
+                            <span class="timestamp">Today at 12:25 PM</span>
+                        </div>
+                        <div class="message-body">
+                            Welcome to the new Xcord experience. It combines Discord's sleek UI with Telegram's powerful
+                            features.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <button class="input-btn"><i data-lucide="plus-circle"></i></button>
+                    <textarea placeholder="Message #general"></textarea>
+                    <div class="input-right-actions">
+                        <button class="input-btn"><i data-lucide="gift"></i></button>
+                        <button class="input-btn"><i data-lucide="sticker"></i></button>
+                        <button class="input-btn"><i data-lucide="smile"></i></button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 4. FAR RIGHT: Profile Sidebar (Hidden by default) -->
+        <aside class="profile-sidebar" id="profile-sidebar">
+            <div class="profile-header">
+                <div class="profile-banner"></div>
+                <div class="profile-avatar">
+                    <img src="https://via.placeholder.com/80" alt="Profile">
+                </div>
+                <div class="profile-name">Pavel Durov</div>
+                <div class="profile-username">@durov</div>
+            </div>
+            <div class="profile-body">
+                <!-- Tabs: Media, Files, etc. -->
+                <div class="profile-section">
+                    <h4>About</h4>
+                    <p>CEO of Telegram. Now working on Xcord.</p>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="profile-modal" id="profile-modal">
+        <div class="profile-container">
+            <!-- Header with Custom Background -->
+            <div class="profile-header-banner" id="profile-banner">
+                <img src="" alt="" class="profile-bg-image" id="profile-bg" style="display: none;">
+
+                <!-- Close Button -->
+                <button class="profile-close-btn" id="profile-close">
+                    <i data-lucide="x"></i>
+                </button>
+
+                <!-- Edit Button -->
+                <button class="profile-edit-btn" id="profile-edit-toggle">
+                    <i data-lucide="edit-2"></i> Edit Profile
+                </button>
+
+                <!-- Glassmorphism Overlay -->
+                <div class="profile-glass-overlay"></div>
+
+                <!-- Avatar & Name -->
+                <div class="profile-avatar-section">
+                    <img src="assets/avatars/default_set.png" alt="Avatar" class="profile-avatar-large"
+                        id="profile-avatar">
+                    <div class="profile-info-main">
+                        <div class="profile-username-large" id="profile-name">Ilya Krossov</div>
+                        <div class="profile-status-text" id="profile-status">Online</div>
+                    </div>
+                </div>
+
+                <!-- Level Badge -->
+                <div class="profile-level-badge">
+                    <div class="level-circle" id="profile-level">12</div>
+                    <div class="level-label">Level</div>
+                </div>
+
+                <!-- XP Progress -->
+                <div class="xp-progress-container">
+                    <div class="xp-progress-bar" id="xp-bar" style="width: 45%;"></div>
+                </div>
+            </div>
+
+            <!-- Profile Body -->
+            <div class="profile-body">
+                <div class="profile-section">
+                    <div class="profile-section-title">Statistics</div>
+                    <div class="profile-stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total XP</div>
+                            <div class="stat-value" id="stat-xp">1250</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Messages Sent</div>
+                            <div class="stat-value" id="stat-messages">1125</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Posts Created</div>
+                            <div class="stat-value" id="stat-posts">1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-editor" id="profile-editor">
+                <h3 style="margin-bottom: 20px; color: var(--text-normal);">Edit Profile</h3>
+
+                <div class="editor-section">
+                    <div class="editor-label">Background Image</div>
+                    <label class="file-upload-btn">
+                        <i data-lucide="upload"></i> Upload Background
+                        <input type="file" id="editor-bg-file" accept="image/*,image/gif" style="display: none;">
+                    </label>
+                </div>
+
+                <div class="editor-section">
+                    <div class="editor-label">Background Blur (0-20px)</div>
+                    <input type="range" class="editor-slider" id="editor-blur" min="0" max="20" value="0">
+                    <span id="blur-value" style="color: var(--text-muted); font-size: 12px;">0px</span>
+                </div>
+
+                <div class="editor-section">
+                    <div class="editor-label">Profile Color Theme</div>
+                    <input type="color" class="editor-color-picker" id="editor-color" value="#667eea">
+                    <span style="color: var(--text-muted); font-size: 11px; display: block; margin-top: 4px;">This color
+                        will be applied to your profile regardless of app theme</span>
+                </div>
+
+                <div class="editor-section">
+                    <div class="editor-label">Avatar Image</div>
+                    <label class="file-upload-btn">
+                        <i data-lucide="upload"></i> Upload Avatar
+                        <input type="file" id="editor-avatar-file" accept="image/*,image/gif" style="display: none;">
+                    </label>
+                </div>
+
+                <button class="profile-edit-btn" id="editor-save"
+                    style="position: static; width: 100%; margin-top: 20px;">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Crop Editor Modal -->
+    <div class="crop-modal" id="crop-modal">
+        <div class="crop-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; color: var(--text-normal);">Crop & Adjust Image</h3>
+                <button class="crop-close-btn" id="crop-cancel"
+                    style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 24px; padding: 4px;">
+                    ×
+                </button>
+            </div>
+            <div class="crop-preview-area">
+                <img src="" id="crop-image" style="max-width: 100%; max-height: 400px; display: none;">
+                <canvas id="crop-canvas"
+                    style="max-width: 100%; max-height: 400px; border: 2px solid var(--accent-primary);"></canvas>
+            </div>
+            <div class="crop-controls" style="margin-top: 16px;">
+                <label
+                    style="display: block; margin-bottom: 8px; color: var(--text-normal); font-size: 13px; text-transform: uppercase;">Zoom</label>
+                <input type="range" id="crop-zoom" min="100" max="300" value="100" style="width: 100%;">
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button class="profile-edit-btn" id="crop-accept"
+                        style="flex: 1; position: static; background: var(--accent-primary); border-color: var(--accent-primary);">✓
+                        Use This Image</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settings-modal">
+        <div class="settings-container">
+            <div class="settings-sidebar">
+                <h2 style="padding: 20px; margin: 0; color: var(--header-primary); font-size: 20px;">Настройки</h2>
+                <div class="settings-nav">
+                    <div class="settings-nav-item active" data-section="appearance"><i
+                            data-lucide="palette"></i><span>Внешний вид</span></div>
+                    <div class="settings-nav-item" data-section="voice"><i data-lucide="mic"></i><span>Голос и
+                            видео</span></div>
+                    <div class="settings-nav-item" data-section="security"><i
+                            data-lucide="shield"></i><span>Безопасность</span></div>
+                </div>
+                <div class="settings-logout"><button class="logout-btn" id="logout-btn"><i
+                            data-lucide="log-out"></i><span>Выйти из аккаунта</span></button></div>
+            </div>
+            <div class="settings-content">
+                <button class="settings-close" id="settings-close"><i data-lucide="x"></i></button>
+                <div class="settings-section active" id="section-appearance">
+                    <h3 class="settings-title">Темы</h3>
+
+                    <!-- Built-in Themes -->
+                    <div class="theme-selector">
+                        <label class="theme-option">
+                            <input type="radio" name="theme-select" value="builtin.darkRed" checked>
+                            <span class="theme-name">Dark Red (по умолчанию)</span>
+                        </label>
+                        <label class="theme-option">
+                            <input type="radio" name="theme-select" value="builtin.light">
+                            <span class="theme-name">Light</span>
+                        </label>
+                        <div class="theme-divider"></div>
+                        <!-- Custom Themes -->
+                        <label class="theme-option" id="custom-slot-0">
+                            <input type="radio" name="theme-select" value="custom.0">
+                            <span class="theme-name">[Пустой слот 1]</span>
+                        </label>
+                        <label class="theme-option" id="custom-slot-1">
+                            <input type="radio" name="theme-select" value="custom.1">
+                            <span class="theme-name">[Пустой слот 2]</span>
+                        </label>
+                        <label class="theme-option" id="custom-slot-2">
+                            <input type="radio" name="theme-select" value="custom.2">
+                            <span class="theme-name">[Пустой слот 3]</span>
+                        </label>
+                        <label class="theme-option" id="custom-slot-3">
+                            <input type="radio" name="theme-select" value="custom.3">
+                            <span class="theme-name">[Пустой слот 4]</span>
+                        </label>
+                        <label class="theme-option" id="custom-slot-4">
+                            <input type="radio" name="theme-select" value="custom.4">
+                            <span class="theme-name">[Пустой слот 5]</span>
+                        </label>
+                    </div>
+
+                    <button class="create-theme-btn" id="create-theme-btn">
+                        <i data-lucide="plus"></i> Создать новую тему
+                    </button>
+
+                    <!-- Theme Editor (shown only for custom themes) -->
+                    <div class="theme-editor" id="theme-editor" style="display: none;">
+                        <h4 class="editor-title">Редактор темы</h4>
+                        <input type="hidden" id="theme-slot-index">
+
+                        <div class="setting-item">
+                            <label class="setting-label">Название темы</label>
+                            <input type="text" class="editor-input" id="theme-name" placeholder="My Theme">
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Основной фон</label>
+                            <input type="color" class="setting-color-picker" id="theme-bgPrimary" value="#1a0a0a">
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Вторичный фон</label>
+                            <input type="color" class="setting-color-picker" id="theme-bgSecondary" value="#0f0505">
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Акцент</label>
+                            <input type="color" class="setting-color-picker" id="theme-accentPrimary" value="#af1d1d">
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Обои чата</label>
+                            <label class="file-upload-btn" style="width: 100%;">
+                                <i data-lucide="upload"></i> Загрузить обои
+                                <input type="file" id="theme-wallpaper-upload" accept="image/*" style="display: none;">
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Размытие обоев (0-20px)</label>
+                            <input type="range" class="setting-slider" id="theme-wallpaper-blur" min="0" max="20"
+                                value="0">
+                            <span class="slider-value" id="theme-wallpaper-blur-value">0px</span>
+                        </div>
+
+                        <div style="display: flex; gap: 12px;">
+                            <button class="save-settings-btn" id="save-theme" style="flex: 1;">
+                                <i data-lucide="check"></i> Сохранить тему
+                            </button>
+                            <button class="delete-theme-btn" id="delete-theme">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section" id="section-voice">
+                    <h3 class="settings-title">Голос и видео</h3>
+                    <p style="color: var(--text-muted); padding: 20px;">Настройки голоса и видео будут добавлены
+                        позже...</p>
+                </div>
+                <div class="settings-section" id="section-security">
+                    <h3 class="settings-title">Безопасность</h3>
+                    <p style="color: var(--text-muted); padding: 20px;">Настройки безопасности будут добавлены позже...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Init Icons -->
+    <script src="scripts/data.js"></script>
+    <script src="scripts/profile.js"></script>
+    <script src="scripts/crop-editor.js"></script>
+    <script src="scripts/themes.js"></script>
+    <script src="scripts/settings.js"></script>
+    <script src="scripts/theme-settings.js"></script>
+    <script src="scripts/app.js"></script>
+</body>
+
+</html>

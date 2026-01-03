@@ -1,0 +1,85 @@
+// Xcord Logic (Vanilla)
+
+document.addEventListener('DOMContentLoaded', () => {
+    initIcons();
+    initBurgerMenu();
+    initTabs();
+    initProfileToggle();
+});
+
+// 1. Icons
+function initIcons() {
+    // Lucide is loaded via CDN script in HTML
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+// 2. Burger Menu Logic
+function initBurgerMenu() {
+    const burgerBtn = document.getElementById('burger-btn');
+    const mainMenu = document.getElementById('main-menu');
+    
+    if (!burgerBtn || !mainMenu) return;
+
+    // Toggle menu
+    burgerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        mainMenu.classList.toggle('active');
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!mainMenu.contains(e.target) && !burgerBtn.contains(e.target)) {
+            mainMenu.classList.remove('active');
+        }
+    });
+
+    // Handle items
+    mainMenu.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', () => {
+            // Ripple effect or logic here
+            console.log('Menu item clicked:', item.querySelector('span')?.innerText);
+            mainMenu.classList.remove('active');
+        });
+    });
+}
+
+// 3. Tab Filtering Logic (Mock)
+function initTabs() {
+    const tabs = document.querySelectorAll('.filter-tab');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active from all
+            tabs.forEach(t => t.classList.remove('active'));
+            // Add to clicked
+            tab.classList.add('active');
+            
+            // In real app, filter .chat-item elements here
+            console.log('Filter switched to:', tab.innerText);
+        });
+    });
+
+    // Sidebar Folder Logic
+    const folders = document.querySelectorAll('.nav-item');
+    folders.forEach(folder => {
+        folder.addEventListener('click', () => {
+            folders.forEach(f => f.classList.remove('active'));
+            folder.classList.add('active');
+            console.log('Folder switched');
+        });
+    });
+}
+
+// 4. Profile Sidebar Toggle
+function initProfileToggle() {
+    const toggleBtn = document.getElementById('toggle-profile');
+    const profileSidebar = document.getElementById('profile-sidebar');
+
+    if (!toggleBtn || !profileSidebar) return;
+
+    toggleBtn.addEventListener('click', () => {
+        profileSidebar.classList.toggle('active');
+    });
+}

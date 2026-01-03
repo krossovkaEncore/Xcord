@@ -1,0 +1,188 @@
+/* Component Styles */
+
+/* Avatars */
+.avatar-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* Telegram/Discord User Style */
+    object-fit: cover;
+    transition: box-shadow 0.2s;
+}
+
+/* Discord Server Icons (Left Nav) */
+.nav-item {
+    width: 48px;
+    height: 48px;
+    background-color: var(--bg-primary);
+    border-radius: 50%;
+    /* Starts round */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    color: var(--text-muted);
+    position: relative;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    background-color: var(--accent-primary);
+    color: #fff;
+    border-radius: 16px;
+    /* Discord Squircle on hover */
+}
+
+/* Active Indicator (White Pill) */
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    background: white;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Search Bar Area with Burger */
+.search-container {
+    display: flex;
+    align-items: center;
+    padding: 0 10px 10px 10px;
+    gap: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.burger-menu-btn {
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.burger-menu-btn:hover {
+    color: var(--text-normal);
+}
+
+.search-bar {
+    flex: 1;
+    /* Removed padding/border as it's now handled by container */
+}
+
+/* Dropdown Menu (Telegram Style) */
+.dropdown-menu {
+    position: absolute;
+    top: 45px;
+    /* Below burger */
+    left: 10px;
+    width: 260px;
+    /* Compact */
+    background-color: var(--background-floating);
+    border-radius: 5px;
+    /* Requested 5 radius */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+
+    /* Animation: Origin Top Left */
+    transform-origin: top left;
+    transform: scale(0);
+    opacity: 0;
+    transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.2s ease;
+
+    display: flex;
+    /* Always flex, just hidden by scale/opacity/pointer-events */
+    flex-direction: column;
+    pointer-events: none;
+    padding: 6px 0;
+}
+
+.dropdown-menu.active {
+    transform: scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    color: var(--text-normal);
+    cursor: pointer;
+    font-size: 15px;
+    gap: 12px;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-modifier-hover);
+}
+
+.dropdown-item i {
+    width: 20px;
+    height: 20px;
+    color: var(--text-muted);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.06);
+    margin: 8px 0;
+}
+
+.search-bar input {
+    width: 100%;
+    background-color: var(--bg-tertiary);
+    border: none;
+    border-radius: 4px;
+    padding: 6px 8px;
+    color: var(--text-normal);
+    font-size: 14px;
+}
+
+.search-bar input:focus {
+    outline: none;
+}
+
+/* Buttons */
+.filter-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 10px;
+    overflow-x: auto;
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.filter-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 13px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.filter-tab.active {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-normal);
+}.dropdown-header-custom { padding: 8px 16px 4px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
