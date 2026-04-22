@@ -1,26 +1,42 @@
 :root {
-    /* Colors - Dark Red Palette */
-    --bg-primary: #1e0505;
-    /* Deepest background (Chat area) */
-    --bg-secondary: #2b0a0a;
-    /* Middle sidebar */
-    --bg-tertiary: #130303;
-    /* Left sidebar / Navigation */
-    --bg-modifier-hover: rgba(255, 51, 51, 0.08);
-    --bg-modifier-active: rgba(255, 51, 51, 0.16);
-
+    /* ============================================
+       iOS 26 Glass Color Palette
+       ============================================ */
+    
+    /* Base Colors - Deep Dark Blue/Purple */
+    --bg-primary: #0a0a12;
+    --bg-secondary: #12121f;
+    --bg-tertiary: #1a1a2e;
+    --bg-modifier-hover: rgba(255, 255, 255, 0.06);
+    --bg-modifier-active: rgba(255, 255, 255, 0.1);
+    
+    /* Glass Effect Colors */
+    --glass-bg: rgba(18, 18, 31, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: rgba(0, 0, 0, 0.3);
+    
+    /* Text Colors */
     --header-primary: #ffffff;
-    --header-secondary: #b9bbbe;
-    --text-normal: #dcddde;
-    --text-muted: #72767d;
-
-    --accent-primary: #af1d1d;
-    /* Brand Red */
-    --accent-hover: #ff3333;
-
-    --channel-textarea-background: #2b0a0a;
-    --background-floating: #18191c;
-
+    --header-secondary: rgba(255, 255, 255, 0.7);
+    --text-normal: rgba(255, 255, 255, 0.9);
+    --text-muted: rgba(255, 255, 255, 0.5);
+    
+    /* Accent Colors - Vibrant Blue/Purple */
+    --accent-primary: #6366f1;
+    --accent-secondary: #8b5cf6;
+    --accent-hover: #818cf8;
+    --accent-glow: rgba(99, 102, 241, 0.4);
+    
+    /* Status Colors */
+    --status-online: #10b981;
+    --status-idle: #f59e0b;
+    --status-dnd: #ef4444;
+    --status-offline: #6b7280;
+    
+    /* Input & Floating */
+    --channel-textarea-background: rgba(255, 255, 255, 0.05);
+    --background-floating: rgba(26, 26, 46, 0.9);
+    
     /* Spacing */
     --space-xs: 4px;
     --space-sm: 8px;
@@ -33,17 +49,23 @@
     --transition-normal: 0.3s ease;
     --transition-slow: 0.5s ease;
 
-    /* Spacing & Sizes */
+    /* Sizes */
     --sidebar-width: 72px;
     --channels-width: 240px;
 
     /* Fonts */
     --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
 }
 
 /* Smooth color transitions for theme changes */
 * {
-    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
 }
 
 /* Prevent transition on page load */
@@ -51,39 +73,41 @@
     transition: none !important;
 }
 
-/* Light Theme (Dark Gray / Silver) */
+/* Light Theme - iOS Glass Light */
 body.theme-light {
-    --bg-primary: #a8a8a8;
-    /* Much darker gray for main */
-    --bg-secondary: #c0c0c0;
-    /* Silver for sidebars */
-    --bg-tertiary: #909090;
-    /* Darker navigation */
-    --bg-modifier-hover: rgba(0, 0, 0, 0.1);
-    --bg-modifier-active: rgba(0, 0, 0, 0.2);
-
-    --header-primary: #0a0a0a;
-    --header-secondary: #2a2a2a;
-    --text-normal: #1a1a1a;
-    --text-muted: #3a3a3a;
-
-    --accent-primary: #d42020;
-    /* Darker red for contrast */
-    --channel-textarea-background: #d8d8d8;
-    --background-floating: #d8d8d8;
+    --bg-primary: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f0f0f2;
+    --bg-modifier-hover: rgba(0, 0, 0, 0.05);
+    --bg-modifier-active: rgba(0, 0, 0, 0.1);
+    
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --glass-shadow: rgba(0, 0, 0, 0.1);
+    
+    --header-primary: #1a1a1a;
+    --header-secondary: #4a4a4a;
+    --text-normal: #2a2a2a;
+    --text-muted: #8a8a8a;
+    
+    --channel-textarea-background: rgba(0, 0, 0, 0.03);
+    --background-floating: rgba(255, 255, 255, 0.95);
+    
+    --accent-glow: rgba(99, 102, 241, 0.15);
 }
 
 /* 1. Navigation Rail (Left) - REMOVED */
 /* .nav-rail { display: none; } */
 
-/* 2. Chat List (Middle) now becomes the first column */
+/* 2. Chat List (Middle) - iOS 26 Glass Style */
 .chat-list-sidebar {
-    width: 300px;
-    /* Slightly wider since it's the main nav now? Or keep 240. Let's try 280. */
-    background-color: var(--bg-secondary);
+    width: 320px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    border-right: 1px solid var(--glass-border);
     flex-shrink: 0;
 }
 
@@ -94,10 +118,20 @@ body.theme-light {
 }
 
 body {
-    background-color: var(--bg-primary);
+    background: var(--bg-primary);
     color: var(--text-normal);
     font-family: var(--font-primary);
     height: 100vh;
     overflow: hidden;
     user-select: none;
+    transition: background 0.3s ease;
+}
+
+/* Background pattern for app container */
+.app-container {
+    background: 
+        radial-gradient(ellipse at 20% 20%, var(--accent-glow, rgba(99, 102, 241, 0.08)) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+        var(--bg-primary);
+    transition: background 0.3s ease;
 }

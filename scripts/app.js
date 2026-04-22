@@ -13,11 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
     initFolderMenu();
 
-    // Profile System
-    loadProfileData();
+    // Profile System (iOS 26 Glass - initialized in profile.js)
     initProfileModal();
-    initProfileEditor();
-    initMessageXP();
     initImageCropEditor();
     initFileUploads();
 
@@ -108,6 +105,13 @@ function initThemeToggle() {
     const toggleItem = document.getElementById('theme-toggle');
     const themeIndicator = document.getElementById('theme-indicator');
 
+    // Load saved theme
+    const savedTheme = localStorage.getItem('xcord_theme');
+    if (savedTheme === 'light') {
+        isLightTheme = true;
+        document.body.classList.add('theme-light');
+    }
+
     if (!toggleItem) return;
 
     toggleItem.addEventListener('click', (e) => {
@@ -116,7 +120,8 @@ function initThemeToggle() {
         isLightTheme = !isLightTheme;
         document.body.classList.toggle('theme-light', isLightTheme);
 
-        // Theme indicator color updates via CSS automatically
+        // Save theme preference
+        localStorage.setItem('xcord_theme', isLightTheme ? 'light' : 'dark');
     });
 }
 
@@ -220,7 +225,7 @@ function initProfileToggle() {
     });
 }
 
-// Profile Modal Functions
+// Profile Modal Functions - iOS 26 Glass
 function initProfileModal() {
     const modal = document.getElementById('profile-modal');
     const closeBtn = document.getElementById('profile-close');
@@ -240,94 +245,68 @@ function initProfileModal() {
         }
     });
 
+    // Track if user is dragging
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    
+    // Detect drag start
+    modal?.addEventListener('mousedown', (e) => {
+        isDragging = false;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+    });
+    
+    modal?.addEventListener('mousemove', (e) => {
+        const dx = Math.abs(e.clientX - dragStartX);
+        const dy = Math.abs(e.clientY - dragStartY);
+        if (dx > 5 || dy > 5) {
+            isDragging = true;
+        }
+    });
+    
     // Close handlers
-    closeBtn?.addEventListener('click', closeProfile);
+    closeBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeProfile();
+    });
+    
+    // Close only when clicking on overlay, NOT during drag
     modal?.addEventListener('click', (e) => {
-        if (e.target === modal) closeProfile();
+        // Don't close if user was dragging
+        if (isDragging) {
+            isDragging = false;
+            return;
+        }
+        
+        // Don't close if clicking on profile card or its children
+        const profileCard = document.getElementById('profile-card');
+        if (profileCard?.contains(e.target)) {
+            return;
+        }
+        
+        if (e.target === modal || e.target.classList.contains('profile-fullscreen-bg')) {
+            closeProfile();
+        }
     });
 }
-
+    
 function openProfile() {
     const modal = document.getElementById('profile-modal');
-    modal.classList.add('active');
-    updateProfileDisplay();
-    initIcons(); // Re-init icons in modal
+    if (modal) {
+        modal.classList.add('active');
+        // Update display and re-init icons
+        if (typeof updateProfileDisplay === 'function') {
+            updateProfileDisplay();
+        }
+        initIcons();
+    }
 }
 
 function closeProfile() {
     const modal = document.getElementById('profile-modal');
     const editor = document.getElementById('profile-editor');
-    modal.classList.remove('active');
-    editor.classList.remove('active');
+    if (modal) modal.classList.remove('active');
+    if (editor) editor.classList.remove('active');
 }
 
-function initProfileEditor() {
-    const editToggle = document.getElementById('profile-edit-toggle');
-    const editor = document.getElementById('profile-editor');
-    const saveBtn = document.getElementById('editor-save');
-
-    const blurSlider = document.getElementById('editor-blur');
-    const blurValue = document.getElementById('blur-value');
-    const colorPicker = document.getElementById('editor-color');
-
-    // Toggle editor panel
-    editToggle?.addEventListener('click', () => {
-        editor.classList.toggle('active');
-
-        // Load current values into editor
-        if (editor.classList.contains('active')) {
-            blurSlider.value = PROFILE_DATA.backgroundBlur;
-            blurValue.textContent = `${PROFILE_DATA.backgroundBlur}px`;
-            colorPicker.value = PROFILE_DATA.accentColor;
-        }
-    });
-
-    // Live blur preview
-    blurSlider?.addEventListener('input', () => {
-        const blur = blurSlider.value;
-        blurValue.textContent = `${blur}px`;
-        const bgImg = document.getElementById('profile-bg');
-        if (bgImg && bgImg.style.display !== 'none') {
-            bgImg.style.filter = `blur(${blur}px)`;
-        }
-    });
-
-    // Save changes
-    saveBtn?.addEventListener('click', () => {
-        // Save blur and color (images are saved via crop editor)
-        PROFILE_DATA.backgroundBlur = parseInt(blurSlider.value);
-        PROFILE_DATA.accentColor = colorPicker.value;
-
-        updateProfileDisplay();
-        saveProfileData();
-
-        // Show feedback
-        saveBtn.textContent = '✓ Saved!';
-        setTimeout(() => {
-            saveBtn.innerHTML = 'Save Changes';
-        }, 2000);
-    });
-}
-
-function initMessageXP() {
-    // Track messages sent via input
-    const textarea = document.querySelector('.input-wrapper textarea');
-
-    textarea?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const message = textarea.value.trim();
-
-            if (message.length > 0) {
-                // Add XP for message
-                addXP(XP_FOR_MESSAGE);
-                PROFILE_DATA.messages++;
-
-                // Clear input
-                textarea.value = '';
-
-                console.log(`+${XP_FOR_MESSAGE} XP! Total: ${PROFILE_DATA.xp}`);
-            }
-        }
-    });
-}

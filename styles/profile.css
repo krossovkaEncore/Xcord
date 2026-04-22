@@ -220,29 +220,71 @@
     color: var(--text-normal);
 }
 
-/* Edit Button */
+/* Edit Button - iOS 26 Glass Style */
 .profile-edit-btn {
     position: absolute;
     top: 20px;
     left: 30px;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    padding: 10px 20px;
-    border-radius: 6px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    color: var(--text-normal);
+    padding: 12px 24px;
+    border-radius: var(--radius-lg);
     cursor: pointer;
     font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 3;
     font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px var(--glass-shadow);
 }
 
 .profile-edit-btn:hover {
-    background: rgba(0, 0, 0, 0.7);
-    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 24px var(--glass-shadow), 0 0 20px var(--accent-glow);
+    border-color: var(--accent-primary);
 }
+
+.profile-edit-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.profile-edit-btn i {
+    width: 16px;
+    height: 16px;
+}
+
+/* Alternative Edit Button Styles (uncomment to use) */
+/* 
+   Option 2: Minimal Circle
+   .profile-edit-btn {
+       width: 44px;
+       height: 44px;
+       padding: 0;
+       border-radius: 50%;
+       justify-content: center;
+   }
+   
+   Option 3: Gradient
+   .profile-edit-btn {
+       background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+       border: none;
+       color: white;
+   }
+   
+   Option 4: Floating Pill
+   .profile-edit-btn {
+       background: var(--accent-primary);
+       border: none;
+       color: white;
+       box-shadow: 0 4px 20px var(--accent-glow);
+   }
+*/
 
 /* Close Button */
 .profile-close-btn {
@@ -407,4 +449,864 @@
 /* Crop Modal Fixes */
 .crop-close-btn:hover {
     color: var(--accent-primary) !important;
+}
+
+/* ========== NEW STEAM-STYLE PROFILE ELEMENTS ========== */
+
+/* About Section */
+.profile-about-card {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.profile-bio {
+    color: var(--text-normal);
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+    font-style: italic;
+}
+
+.profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.meta-item i {
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+.meta-item strong {
+    color: var(--text-normal);
+}
+
+/* Achievement Count Badge */
+.achievement-count {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-transform: none;
+}
+
+/* Achievements Grid */
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 12px;
+}
+
+.achievement-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.achievement-icon:hover {
+    transform: scale(1.08);
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.achievement-icon.unlocked {
+    border-color: rgba(255, 215, 0, 0.4);
+}
+
+.achievement-icon.locked {
+    opacity: 0.4;
+    filter: grayscale(1);
+}
+
+.achievement-icon img,
+.achievement-icon i {
+    width: 36px;
+    height: 36px;
+}
+
+.achievement-icon .achievement-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-tertiary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 10px 14px;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.achievement-icon:hover .achievement-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+.achievement-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--bg-tertiary);
+}
+
+.achievement-tooltip-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-normal);
+    margin-bottom: 4px;
+}
+
+.achievement-tooltip-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* Activity List */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+    background: var(--bg-modifier-hover);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.activity-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-icon.achievement {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+}
+
+.activity-icon.message {
+    background: linear-gradient(135deg, var(--accent-primary), #5b8def);
+}
+
+.activity-icon.friend {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.activity-icon.game {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.activity-icon i {
+    width: 18px;
+    height: 18px;
+    color: white;
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-text {
+    font-size: 13px;
+    color: var(--text-normal);
+    line-height: 1.4;
+}
+
+.activity-text strong {
+    font-weight: 600;
+}
+
+.activity-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Editor - Textarea */
+.editor-textarea {
+    width: 100%;
+    padding: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: var(--text-normal);
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    font-size: 14px;
+}
+
+.editor-textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+/* Color Filter Grid */
+.color-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.color-filter-btn {
+    width: 100%;
+    height: 32px;
+    border-radius: 4px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.color-filter-btn:hover {
+    transform: scale(1.05);
+}
+
+.color-filter-btn.active {
+    border-color: white;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Enhanced Stat Cards */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-primary), transparent);
+    opacity: 0.5;
+}
+
+/* Profile Section Title Icons */
+.profile-section-title i {
+    margin-right: 8px;
+    vertical-align: middle;
+    opacity: 0.7;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .achievements-grid {
+        grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    }
+    
+    .achievement-icon {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .achievement-icon img,
+    .achievement-icon i {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .profile-meta {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* ============================================
+   iOS 26 Glass Profile Style
+   ============================================ */
+
+/* Fullscreen Background */
+.profile-fullscreen-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.profile-bg-gif {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: subtleMove 20s ease-in-out infinite;
+}
+
+@keyframes subtleMove {
+    0%, 100% { transform: scale(1) translate(0, 0); }
+    50% { transform: scale(1.05) translate(-1%, -1%); }
+}
+
+.profile-bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+/* Profile Card - iOS 26 Glass */
+.profile-card {
+    position: relative;
+    z-index: 2;
+    width: 50%;
+    max-width: 600px;
+    min-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: auto;
+    
+    /* iOS 26 Glass Effect */
+    background: rgba(26, 26, 46, 0.7);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    
+    border-radius: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    
+    padding: 28px;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Tinted Glass Mode */
+.profile-card.glass-tinted {
+    background: rgba(26, 26, 46, 0.85);
+    backdrop-filter: blur(30px) saturate(120%);
+    -webkit-backdrop-filter: blur(30px) saturate(120%);
+}
+
+/* Frosted Glass Mode (default) */
+.profile-card.glass-frosted {
+    background: rgba(26, 26, 46, 0.7);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+}
+
+/* Scrollbar styling */
+.profile-card::-webkit-scrollbar {
+    width: 6px;
+}
+
+.profile-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.profile-card::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.profile-card::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Profile Header */
+.profile-header-ios {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* Avatar */
+.profile-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-avatar-ios {
+    width: 100px;
+    height: 100px;
+    border-radius: 24px;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.profile-avatar-ios:hover {
+    transform: scale(1.02);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Status Indicator */
+.profile-status-indicator {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #10b981;
+    border: 3px solid rgba(26, 26, 46, 0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.profile-status-indicator.offline {
+    background: #6b7280;
+}
+
+.profile-status-indicator.ingame {
+    background: #f59e0b;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+}
+
+/* Profile Info Block */
+.profile-info-block {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-username-ios {
+    font-size: 26px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    margin-bottom: 4px;
+    word-break: break-word;
+}
+
+.profile-realname {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 6px;
+}
+
+.profile-location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.profile-location i {
+    opacity: 0.7;
+}
+
+/* Bio Section */
+.profile-bio-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-bio-text {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+    word-wrap: break-word;
+}
+
+.profile-bio-text.collapsed {
+    display: -webkit-box;
+    -webkit-line-clamp: 7;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.profile-bio-expand {
+    background: transparent;
+    border: none;
+    color: var(--accent-primary);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 0;
+    margin-top: 4px;
+    transition: all 0.2s ease;
+}
+
+.profile-bio-expand:hover {
+    color: #ffffff;
+}
+
+/* Media Section */
+.profile-media-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-media-container {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.profile-media-content {
+    width: 100%;
+    display: block;
+    max-height: 400px;
+    object-fit: cover;
+}
+
+/* Additional Section */
+.profile-additional-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-additional-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.profile-additional-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Music Section */
+.profile-music-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-music-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-music-header i {
+    opacity: 0.7;
+}
+
+.profile-music-track {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.profile-music-track:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-music-cover {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-music-cover i {
+    color: white;
+    width: 24px;
+    height: 24px;
+}
+
+.profile-music-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-music-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-music-artist {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.profile-music-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.profile-music-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary), #8b5cf6);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* Comments Section */
+.profile-comments-section {
+    margin-bottom: 10px;
+}
+
+.profile-comments-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-comments-header i {
+    opacity: 0.7;
+}
+
+.profile-comments-count {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+.profile-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.profile-comment {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.profile-comment:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.profile-comment-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.profile-comment-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-comment-author {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.profile-comment-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-left: auto;
+}
+
+.profile-comment-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* ============================================
+   iOS 26 Glass Editor Panel
+   ============================================ */
+
+.profile-editor-ios {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 380px;
+    height: 100vh;
+    z-index: 100;
+    overflow-y: auto;
+    
+    background: rgba(15, 15, 25, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+    
+    padding: 24px;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.profile-editor-ios.active {
+    transform: translateX(0);
+}
+
+.profile-editor-ios::-webkit-scrollbar {
+    width: 6px;
+}
+
+.profile-editor-ios::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.editor-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 20px 0;
+}
+
+.editor-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.editor-toggle-group {
+    display: flex;
+    gap: 8px;
+}
+
+.editor-toggle-btn {
+    flex: 1;
+    padding: 10px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-normal);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.editor-toggle-btn:hover {
+    background: var(--bg-modifier-hover);
+}
+
+.editor-toggle-btn.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 900px) {
+    .profile-card {
+        width: 70%;
+        min-width: 320px;
+    }
+}
+
+@media (max-width: 600px) {
+    .profile-card {
+        width: 90%;
+        min-width: unset;
+        max-width: unset;
+        margin: 10px;
+        margin-top: 5vh;
+        padding: 20px;
+        border-radius: 24px;
+    }
+    
+    .profile-avatar-ios {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+    }
+    
+    .profile-username-ios {
+        font-size: 22px;
+    }
+    
+    .profile-editor-ios {
+        width: 100%;
+    }
 }

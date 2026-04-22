@@ -20,6 +20,9 @@
     <link rel="stylesheet" href="styles/settings.css">
 </head>
 
+<!-- cd core -->
+<!-- python -m venv venv -->
+
 <body>
 
     <div class="app-container">
@@ -161,6 +164,9 @@
                     <i data-lucide="phone" class="action-icon"></i>
                     <i data-lucide="video" class="action-icon"></i>
                     <i data-lucide="search" class="action-icon"></i>
+                    <button class="jarvis-btn" id="jarvis-btn" title="Jarvis AI">
+                        <i data-lucide="bot"></i>
+                    </button>
                     <i data-lucide="panel-right" class="action-icon" id="toggle-profile"></i>
                 </div>
             </header>
@@ -222,106 +228,191 @@
 
     </div>
 
-    <!-- Profile Modal -->
+    <!-- Profile Modal - iOS 26 Glass Style -->
     <div class="profile-modal" id="profile-modal">
-        <div class="profile-container">
-            <!-- Header with Custom Background -->
-            <div class="profile-header-banner" id="profile-banner">
-                <img src="" alt="" class="profile-bg-image" id="profile-bg" style="display: none;">
+        <!-- Fullscreen Background with GIF -->
+        <div class="profile-fullscreen-bg" id="profile-fullscreen-bg">
+            <img src="" alt="" class="profile-bg-gif" id="profile-bg-gif" style="display: none;">
+            <div class="profile-bg-overlay"></div>
+        </div>
 
-                <!-- Close Button -->
-                <button class="profile-close-btn" id="profile-close">
-                    <i data-lucide="x"></i>
-                </button>
+        <!-- Close Button -->
+        <button class="profile-close-btn" id="profile-close">
+            <i data-lucide="x"></i>
+        </button>
 
-                <!-- Edit Button -->
-                <button class="profile-edit-btn" id="profile-edit-toggle">
-                    <i data-lucide="edit-2"></i> Edit Profile
-                </button>
+        <!-- Edit Button -->
+        <button class="profile-edit-btn" id="profile-edit-toggle">
+            <i data-lucide="settings-2"></i> Изменить
+        </button>
 
-                <!-- Glassmorphism Overlay -->
-                <div class="profile-glass-overlay"></div>
-
-                <!-- Avatar & Name -->
-                <div class="profile-avatar-section">
-                    <img src="assets/avatars/default_set.png" alt="Avatar" class="profile-avatar-large"
+        <!-- Main Profile Card - iOS 26 Glass -->
+        <div class="profile-card" id="profile-card">
+            <!-- Header Section with Avatar -->
+            <div class="profile-header-ios">
+                <div class="profile-avatar-wrapper">
+                    <img src="assets/avatars/default_set.png" alt="Avatar" class="profile-avatar-ios"
                         id="profile-avatar">
-                    <div class="profile-info-main">
-                        <div class="profile-username-large" id="profile-name">Ilya Krossov</div>
-                        <div class="profile-status-text" id="profile-status">Online</div>
-                    </div>
+                    <div class="profile-status-indicator" id="profile-status-dot"></div>
                 </div>
-
-                <!-- Level Badge -->
-                <div class="profile-level-badge">
-                    <div class="level-circle" id="profile-level">12</div>
-                    <div class="level-label">Level</div>
-                </div>
-
-                <!-- XP Progress -->
-                <div class="xp-progress-container">
-                    <div class="xp-progress-bar" id="xp-bar" style="width: 45%;"></div>
-                </div>
-            </div>
-
-            <!-- Profile Body -->
-            <div class="profile-body">
-                <div class="profile-section">
-                    <div class="profile-section-title">Statistics</div>
-                    <div class="profile-stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-label">Total XP</div>
-                            <div class="stat-value" id="stat-xp">1250</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Messages Sent</div>
-                            <div class="stat-value" id="stat-messages">1125</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Posts Created</div>
-                            <div class="stat-value" id="stat-posts">1</div>
-                        </div>
+                
+                <div class="profile-info-block">
+                    <div class="profile-username-ios" id="profile-name">Ilya Krossov</div>
+                    <div class="profile-realname" id="profile-realname" style="display: block;">Ilya Krossov</div>
+                    <div class="profile-location" id="profile-location" style="display: flex;">
+                        <i data-lucide="map-pin" style="width:12px;height:12px;"></i>
+                        <span>Russia</span>
                     </div>
                 </div>
             </div>
 
-            <div class="profile-editor" id="profile-editor">
-                <h3 style="margin-bottom: 20px; color: var(--text-normal);">Edit Profile</h3>
-
-                <div class="editor-section">
-                    <div class="editor-label">Background Image</div>
-                    <label class="file-upload-btn">
-                        <i data-lucide="upload"></i> Upload Background
-                        <input type="file" id="editor-bg-file" accept="image/*,image/gif" style="display: none;">
-                    </label>
-                </div>
-
-                <div class="editor-section">
-                    <div class="editor-label">Background Blur (0-20px)</div>
-                    <input type="range" class="editor-slider" id="editor-blur" min="0" max="20" value="0">
-                    <span id="blur-value" style="color: var(--text-muted); font-size: 12px;">0px</span>
-                </div>
-
-                <div class="editor-section">
-                    <div class="editor-label">Profile Color Theme</div>
-                    <input type="color" class="editor-color-picker" id="editor-color" value="#667eea">
-                    <span style="color: var(--text-muted); font-size: 11px; display: block; margin-top: 4px;">This color
-                        will be applied to your profile regardless of app theme</span>
-                </div>
-
-                <div class="editor-section">
-                    <div class="editor-label">Avatar Image</div>
-                    <label class="file-upload-btn">
-                        <i data-lucide="upload"></i> Upload Avatar
-                        <input type="file" id="editor-avatar-file" accept="image/*,image/gif" style="display: none;">
-                    </label>
-                </div>
-
-                <button class="profile-edit-btn" id="editor-save"
-                    style="position: static; width: 100%; margin-top: 20px;">
-                    Save Changes
+            <!-- Bio Section -->
+            <div class="profile-bio-section">
+                <p class="profile-bio-text" id="profile-bio">
+                    Привет! Я создатель Xcord — децентрализованного мессенджера. Увлекаюсь программированием, AI и созданием интересных проектов. 🎮💻
+                </p>
+                <button class="profile-bio-expand" id="profile-bio-expand" style="display: none;">
+                    Развернуть
                 </button>
             </div>
+
+            <!-- Media Section -->
+            <div class="profile-media-section" id="profile-media-section" style="display: none;">
+                <!-- Can be image/gif/video -->
+                <div class="profile-media-container">
+                    <img src="" alt="" class="profile-media-content" id="profile-media-content" style="display: none;">
+                    <video src="" class="profile-media-content" id="profile-media-video" style="display: none;" controls></video>
+                </div>
+            </div>
+
+            <!-- Additional Text Field -->
+            <div class="profile-additional-section" id="profile-additional-section" style="display: none;">
+                <div class="profile-additional-label">Дополнительно</div>
+                <p class="profile-additional-text" id="profile-additional-text"></p>
+            </div>
+
+            <!-- Music Section -->
+            <div class="profile-music-section" id="profile-music-section" style="display: none;">
+                <div class="profile-music-header">
+                    <i data-lucide="music" style="width:16px;height:16px;"></i>
+                    <span>Сейчас играет</span>
+                </div>
+                <div class="profile-music-track">
+                    <div class="profile-music-cover">
+                        <i data-lucide="music"></i>
+                    </div>
+                    <div class="profile-music-info">
+                        <div class="profile-music-title" id="music-title">Название трека</div>
+                        <div class="profile-music-artist" id="music-artist">Исполнитель</div>
+                    </div>
+                    <div class="profile-music-progress">
+                        <div class="profile-music-progress-bar" id="music-progress-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="profile-comments-section" id="profile-comments-section">
+                <div class="profile-comments-header">
+                    <i data-lucide="message-circle" style="width:16px;height:16px;"></i>
+                    <span>Комментарии</span>
+                    <span class="profile-comments-count" id="profile-comments-count">0</span>
+                </div>
+                <div class="profile-comments-list" id="profile-comments-list">
+                    <!-- Comments will be populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Editor Panel -->
+        <div class="profile-editor-ios" id="profile-editor">
+            <h3 style="margin-bottom: 20px; color: var(--text-normal);">Редактор профиля</h3>
+
+            <div class="editor-section">
+                <div class="editor-label">Никнейм</div>
+                <input type="text" class="editor-input" id="editor-username" placeholder="Ваш никнейм">
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-label">
+                    <input type="checkbox" id="editor-show-realname" checked>
+                    <span>Показывать реальное имя</span>
+                </div>
+                <input type="text" class="editor-input" id="editor-realname" placeholder="Ваше имя">
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-label">
+                    <input type="checkbox" id="editor-show-location" checked>
+                    <span>Показывать местоположение</span>
+                </div>
+                <input type="text" class="editor-input" id="editor-location" placeholder="Город, страна">
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-label">Описание (Bio)</div>
+                <textarea class="editor-textarea" id="editor-bio" placeholder="Расскажите о себе..." rows="4"></textarea>
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-label">Гифка на фоне</div>
+                <label class="file-upload-btn">
+                    <i data-lucide="upload"></i> Загрузить гифку
+                    <input type="file" id="editor-bg-file" accept="image/gif,image/webp,video/*" style="display: none;">
+                </label>
+                <button class="file-upload-btn" id="editor-bg-clear" style="margin-top: 8px; background: var(--bg-modifier-active);">
+                    <i data-lucide="x"></i> Удалить
+                </button>
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-label">Аватар</div>
+                <label class="file-upload-btn">
+                    <i data-lucide="upload"></i> Загрузить аватар
+                    <input type="file" id="editor-avatar-file" accept="image/*" style="display: none;">
+                </label>
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-label">Медиа (изображение/видео)</div>
+                <label class="file-upload-btn">
+                    <i data-lucide="image"></i> Загрузить медиа
+                    <input type="file" id="editor-media-file" accept="image/*,video/*" style="display: none;">
+                </label>
+                <button class="file-upload-btn" id="editor-media-clear" style="margin-top: 8px; background: var(--bg-modifier-active);">
+                    <i data-lucide="x"></i> Удалить медиа
+                </button>
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-label">Дополнительный текст</div>
+                <textarea class="editor-textarea" id="editor-additional" placeholder="Дополнительная информация..." rows="3"></textarea>
+            </div>
+
+            <div class="editor-divider"></div>
+            <div class="editor-section-title">iOS 26 Glass настройки</div>
+
+            <div class="editor-section">
+                <div class="editor-label">Прозрачность профиля (<span id="opacity-value">70</span>%)</div>
+                <input type="range" class="editor-slider" id="editor-opacity" min="10" max="100" value="70">
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-label">Цвет стекла</div>
+                <input type="color" class="editor-color-picker" id="editor-glass-color" value="#1a1a2e">
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-label">Режим стекла</div>
+                <div class="editor-toggle-group">
+                    <button class="editor-toggle-btn active" data-glass-mode="frosted">Матовое</button>
+                    <button class="editor-toggle-btn" data-glass-mode="tinted">Тонированное</button>
+                </div>
+            </div>
+
+            <button class="profile-edit-btn" id="editor-save" style="position: static; width: 100%; margin-top: 20px;">
+                Сохранить изменения
+            </button>
         </div>
     </div>
 
@@ -353,6 +444,45 @@
         </div>
     </div>
 
+    <!-- Jarvis AI Modal -->
+    <div class="jarvis-modal" id="jarvis-modal">
+        <div class="jarvis-container">
+            <div class="jarvis-header">
+                <div class="jarvis-header-info">
+                    <div class="jarvis-avatar">
+                        <i data-lucide="bot"></i>
+                    </div>
+                    <div>
+                        <div class="jarvis-title">Jarvis AI</div>
+                        <div class="jarvis-subtitle">Ваш голосовой помощник</div>
+                    </div>
+                </div>
+                <button class="jarvis-close" id="jarvis-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="jarvis-messages" id="jarvis-messages">
+                <div class="jarvis-message bot">
+                    Привет! Я Jarvis — ваш личный AI-ассистент. Вы можете:
+                    <br>• Отправлять текстовые команды
+                    <br>• Использовать голосовые команды (скажите "Jarvis")
+                    <br>• Попросить нарисовать картинку
+                    <br>• Выполнить команды компьютера
+                    <br><br>Чем могу помочь?
+                </div>
+            </div>
+            <div class="jarvis-input-area">
+                <button class="jarvis-voice-btn" id="jarvis-voice" title="Голосовой ввод">
+                    <i data-lucide="mic"></i>
+                </button>
+                <input type="text" id="jarvis-input" placeholder="Введите команду для Jarvis...">
+                <button class="jarvis-send-btn" id="jarvis-send">
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div class="settings-modal" id="settings-modal">
         <div class="settings-container">
@@ -372,95 +502,124 @@
             <div class="settings-content">
                 <button class="settings-close" id="settings-close"><i data-lucide="x"></i></button>
                 <div class="settings-section active" id="section-appearance">
-                    <h3 class="settings-title">Темы</h3>
+                    <h3 class="settings-title">Внешний вид</h3>
 
-                    <!-- Built-in Themes -->
-                    <div class="theme-selector">
-                        <label class="theme-option">
-                            <input type="radio" name="theme-select" value="builtin.darkRed" checked>
-                            <span class="theme-name">Dark Red (по умолчанию)</span>
+                    <!-- Режим интерфейса -->
+                    <div class="settings-subsection">
+                        <h4 class="settings-subsection-title">Режим</h4>
+                        <div class="interface-mode-toggle">
+                            <button class="mode-btn" id="mode-dark" title="Тёмная тема">
+                                <i data-lucide="moon"></i>
+                                <span>Тёмная</span>
+                            </button>
+                            <button class="mode-btn" id="mode-light" title="Светлая тема">
+                                <i data-lucide="sun"></i>
+                                <span>Светлая</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Палитра цветов -->
+                    <div class="settings-subsection">
+                        <h4 class="settings-subsection-title">Палитра цветов</h4>
+                        <div class="color-presets">
+                            <button class="color-preset active" data-primary="#6366f1" data-secondary="#8b5cf6" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);" title="Фиолетовая"></button>
+                            <button class="color-preset" data-primary="#3b82f6" data-secondary="#06b6d4" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);" title="Синяя"></button>
+                            <button class="color-preset" data-primary="#10b981" data-secondary="#34d399" style="background: linear-gradient(135deg, #10b981, #34d399);" title="Зелёная"></button>
+                            <button class="color-preset" data-primary="#f59e0b" data-secondary="#fbbf24" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);" title="Оранжевая"></button>
+                            <button class="color-preset" data-primary="#ef4444" data-secondary="#f87171" style="background: linear-gradient(135deg, #ef4444, #f87171);" title="Красная"></button>
+                            <button class="color-preset" data-primary="#ec4899" data-secondary="#f472b6" style="background: linear-gradient(135deg, #ec4899, #f472b6);" title="Розовая"></button>
+                            <button class="color-preset" data-primary="#14b8a6" data-secondary="#2dd4bf" style="background: linear-gradient(135deg, #14b8a6, #2dd4bf);" title="Бирюзовая"></button>
+                            <button class="color-preset" data-primary="#78716c" data-secondary="#a8a29e" style="background: linear-gradient(135deg, #78716c, #a8a29e);" title="Серая"></button>
+                        </div>
+                        
+                        <div class="setting-item" style="margin-top: 20px;">
+                            <label class="setting-label">Основной цвет</label>
+                            <input type="color" class="setting-color-picker" id="primary-color" value="#6366f1">
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label class="setting-label">Вторичный цвет</label>
+                            <input type="color" class="setting-color-picker" id="secondary-color" value="#8b5cf6">
+                        </div>
+                    </div>
+
+                    <!-- Обои чата -->
+                    <div class="settings-subsection">
+                        <h4 class="settings-subsection-title">Обои чата</h4>
+                        <label class="file-upload-btn" style="width: 100%; margin-bottom: 12px;">
+                            <i data-lucide="upload"></i> Загрузить обои
+                            <input type="file" id="chat-wallpaper-upload" accept="image/*" style="display: none;">
                         </label>
-                        <label class="theme-option">
-                            <input type="radio" name="theme-select" value="builtin.light">
-                            <span class="theme-name">Light</span>
+                        <button class="file-upload-btn" id="chat-wallpaper-clear" style="width: 100%; background: var(--bg-modifier-active);">
+                            <i data-lucide="x"></i> Удалить обои
+                        </button>
+                        <div class="setting-item" style="margin-top: 16px;">
+                            <label class="setting-label">Размытие обоев (<span id="wallpaper-blur-value">0</span>px)</label>
+                            <input type="range" class="setting-slider" id="wallpaper-blur" min="0" max="30" value="0" style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <!-- Glass эффекты -->
+                    <div class="settings-subsection">
+                        <h4 class="settings-subsection-title">Эффект стекла (iOS 26 Glass)</h4>
+                        <div class="setting-item">
+                            <label class="setting-label">Прозрачность (<span id="glass-opacity-value">70</span>%)</label>
+                            <input type="range" class="setting-slider" id="glass-opacity" min="20" max="100" value="70" style="width: 100%;">
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">Размытие фона (<span id="glass-blur-value">30</span>px)</label>
+                            <input type="range" class="setting-slider" id="glass-blur" min="0" max="60" value="30" style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <!-- Анимации -->
+                    <div class="settings-subsection">
+                        <h4 class="settings-subsection-title">Анимации</h4>
+                        <label class="toggle-setting">
+                            <input type="checkbox" id="enable-animations" checked>
+                            <span class="toggle-switch"></span>
+                            <span class="toggle-label">Включить анимации</span>
                         </label>
-                        <div class="theme-divider"></div>
-                        <!-- Custom Themes -->
-                        <label class="theme-option" id="custom-slot-0">
-                            <input type="radio" name="theme-select" value="custom.0">
-                            <span class="theme-name">[Пустой слот 1]</span>
+                        <label class="toggle-setting">
+                            <input type="checkbox" id="enable-hover-effects" checked>
+                            <span class="toggle-switch"></span>
+                            <span class="toggle-label">Эффекты при наведении</span>
                         </label>
-                        <label class="theme-option" id="custom-slot-1">
-                            <input type="radio" name="theme-select" value="custom.1">
-                            <span class="theme-name">[Пустой слот 2]</span>
-                        </label>
-                        <label class="theme-option" id="custom-slot-2">
-                            <input type="radio" name="theme-select" value="custom.2">
-                            <span class="theme-name">[Пустой слот 3]</span>
-                        </label>
-                        <label class="theme-option" id="custom-slot-3">
-                            <input type="radio" name="theme-select" value="custom.3">
-                            <span class="theme-name">[Пустой слот 4]</span>
-                        </label>
-                        <label class="theme-option" id="custom-slot-4">
-                            <input type="radio" name="theme-select" value="custom.4">
-                            <span class="theme-name">[Пустой слот 5]</span>
+                        <label class="toggle-setting">
+                            <input type="checkbox" id="enable-glow-effects" checked>
+                            <span class="toggle-switch"></span>
+                            <span class="toggle-label">Световые эффекты (glow)</span>
                         </label>
                     </div>
 
-                    <button class="create-theme-btn" id="create-theme-btn">
-                        <i data-lucide="plus"></i> Создать новую тему
-                    </button>
-
-                    <!-- Theme Editor (shown only for custom themes) -->
-                    <div class="theme-editor" id="theme-editor" style="display: none;">
-                        <h4 class="editor-title">Редактор темы</h4>
-                        <input type="hidden" id="theme-slot-index">
-
+                    <!-- Размер интерфейса -->
+                    <div class="settings-subsection">
+                        <h4 class="settings-subsection-title">Размер интерфейса</h4>
                         <div class="setting-item">
-                            <label class="setting-label">Название темы</label>
-                            <input type="text" class="editor-input" id="theme-name" placeholder="My Theme">
+                            <label class="setting-label">Масштаб (<span id="interface-scale-value">100</span>%)</label>
+                            <input type="range" class="setting-slider" id="interface-scale" min="75" max="150" value="100" step="5" style="width: 100%;">
                         </div>
+                    </div>
 
-                        <div class="setting-item">
-                            <label class="setting-label">Основной фон</label>
-                            <input type="color" class="setting-color-picker" id="theme-bgPrimary" value="#1a0a0a">
-                        </div>
-
-                        <div class="setting-item">
-                            <label class="setting-label">Вторичный фон</label>
-                            <input type="color" class="setting-color-picker" id="theme-bgSecondary" value="#0f0505">
-                        </div>
-
-                        <div class="setting-item">
-                            <label class="setting-label">Акцент</label>
-                            <input type="color" class="setting-color-picker" id="theme-accentPrimary" value="#af1d1d">
-                        </div>
-
-                        <div class="setting-item">
-                            <label class="setting-label">Обои чата</label>
-                            <label class="file-upload-btn" style="width: 100%;">
-                                <i data-lucide="upload"></i> Загрузить обои
-                                <input type="file" id="theme-wallpaper-upload" accept="image/*" style="display: none;">
+                    <!-- Готовые темы -->
+                    <div class="settings-subsection">
+                        <h4 class="settings-subsection-title">Темы</h4>
+                        <div class="theme-selector">
+                            <label class="theme-option">
+                                <input type="radio" name="theme-select" value="builtin.darkRed" checked>
+                                <span class="theme-name">iOS 26 Glass (тёмная)</span>
+                            </label>
+                            <label class="theme-option">
+                                <input type="radio" name="theme-select" value="builtin.light">
+                                <span class="theme-name">iOS 26 Glass (светлая)</span>
                             </label>
                         </div>
-
-                        <div class="setting-item">
-                            <label class="setting-label">Размытие обоев (0-20px)</label>
-                            <input type="range" class="setting-slider" id="theme-wallpaper-blur" min="0" max="20"
-                                value="0">
-                            <span class="slider-value" id="theme-wallpaper-blur-value">0px</span>
-                        </div>
-
-                        <div style="display: flex; gap: 12px;">
-                            <button class="save-settings-btn" id="save-theme" style="flex: 1;">
-                                <i data-lucide="check"></i> Сохранить тему
-                            </button>
-                            <button class="delete-theme-btn" id="delete-theme">
-                                <i data-lucide="trash-2"></i>
-                            </button>
-                        </div>
                     </div>
+
+                    <button class="save-settings-btn" id="save-appearance" style="margin-top: 30px; width: 100%;">
+                        <i data-lucide="check"></i> Сохранить изменения
+                    </button>
                 </div>
                 <div class="settings-section" id="section-voice">
                     <h3 class="settings-title">Голос и видео</h3>
@@ -483,6 +642,7 @@
     <script src="scripts/themes.js"></script>
     <script src="scripts/settings.js"></script>
     <script src="scripts/theme-settings.js"></script>
+    <script src="scripts/jarvis.js"></script>
     <script src="scripts/app.js"></script>
 </body>
 

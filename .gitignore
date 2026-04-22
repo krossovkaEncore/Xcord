@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.so
+.venv/
+venv/
+env/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# PyInstaller (build artifacts)
+build/
+dist/
+*.spec
+*.toc
+*.pyz
+*.pkg
+*.manifest
+*.log
+*.warn
+
+# Executables (often produced by PyInstaller)
+*.exe
+
