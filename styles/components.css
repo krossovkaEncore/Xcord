@@ -183,6 +183,22 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+}
+
+#chat-wallpaper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    pointer-events: none;
+    transition: filter 0.3s ease;
 }
 
 .filter-tabs::-webkit-scrollbar {
@@ -190,7 +206,7 @@
 }
 
 .filter-tab {
-    background: var(--bg-modifier-hover);
+    background: transparent;
     border: 1px solid transparent;
     color: var(--text-muted);
     cursor: pointer;
@@ -200,6 +216,9 @@
     border-radius: var(--radius-lg);
     white-space: nowrap;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .filter-tab:hover {
@@ -212,4 +231,149 @@
     color: white;
     box-shadow: 0 4px 16px var(--accent-glow);
     border-color: transparent;
+}
+
+.filter-tab i {
+    width: 14px;
+    height: 14px;
+}
+
+/* Peer Hash Section */
+.peer-hash-section {
+    font-family: monospace;
+}
+
+/* Message Styles */
+.message {
+    display: flex;
+    flex-direction: column;
+    margin: 8px 16px;
+    max-width: 70%;
+}
+
+.message-own {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.message-other {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+.message-content {
+    background: var(--bg-modifier-active);
+    padding: 10px 14px;
+    border-radius: var(--radius-lg);
+    color: var(--text-normal);
+    word-wrap: break-word;
+}
+
+.message-own .message-content {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+}
+
+.message-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Contact Item */
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+}
+
+.contact-item:hover {
+    background: var(--bg-modifier-hover);
+}
+
+.contact-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-modifier-active);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-primary);
+}
+
+.contact-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.contact-name {
+    font-weight: 600;
+    color: var(--text-normal);
+    margin-bottom: 2px;
+}
+
+.contact-hash {
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--text-muted);
+}
+
+.contact-remove-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.contact-remove-btn:hover {
+    background: var(--bg-modifier-active);
+    color: var(--status-dnd);
+}
+
+/* TTS Button */
+.message-tts-btn {
+    background: var(--bg-modifier-hover);
+    border: none;
+    color: var(--accent-primary);
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    margin-top: 6px;
+    align-self: flex-start;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.message-tts-btn:hover {
+    background: var(--bg-modifier-active);
+    transform: translateY(-1px);
+}
+
+.message-tts-btn:active {
+    transform: translateY(0);
+}
+
+.message-tts-btn i {
+    width: 14px;
+    height: 14px;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }

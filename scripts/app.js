@@ -1,40 +1,50 @@
-// Xcord Logic
+// Xcord логика работы
 
-// State
+// Состояние
 let currentFilter = 'all';
-let activeChatId = CHATS[0].id; // Default
-let isLightTheme = false; // Theme State
+let activeChatId = CHATS[0].id; // по дефолту
+let isLightTheme = false; // состояние темы
 
-document.addEventListener('DOMContentLoaded', () => {
-    initIcons();
-    initBurgerMenu();
-    initTabs(); // Keep horizontal tabs synced with menu folders
-    initProfileToggle();
-    initThemeToggle();
-    initFolderMenu();
+// Только если main.js еще не инициализировал
+if (typeof APP_STATE === 'undefined' || !APP_STATE.initialized) {
+    document.addEventListener('DOMContentLoaded', () => {
+        initIcons();
+        initBurgerMenu();
+        initTabs();
+        initProfileToggle();
+        initThemeToggle();
+        initFolderMenu();
 
-    // Profile System (iOS 26 Glass - initialized in profile.js)
-    initProfileModal();
-    initImageCropEditor();
-    initFileUploads();
+        // Профиль система
+        initProfileModal();
+        initImageCropEditor();
+        initFileUploads();
 
-    // Settings System
-    loadSettings();
-    initSettingsModal();
+        // Настройки система
+        if (typeof loadSettings === 'function') {
+            loadSettings();
+        }
+        if (typeof initSettingsModal === 'function') {
+            initSettingsModal();
+        }
 
-    // Initial Render
-    renderChatList();
-    renderChat(CHATS.find(c => c.id === activeChatId));
-});
+        // Первый рендер
+        renderChatList();
+        const activeChat = CHATS.find(c => c.id === activeChatId);
+        if (activeChat) {
+            renderChat(activeChat);
+        }
+    });
+}
 
-// 1. Icons
+// 1. Иконки
 function initIcons() {
     if (window.lucide) {
         lucide.createIcons();
     }
 }
 
-// 2. Burger Menu
+// 2. Бургер меню
 function initBurgerMenu() {
     const burgerBtn = document.getElementById('burger-btn');
     const mainMenu = document.getElementById('main-menu');
@@ -53,19 +63,19 @@ function initBurgerMenu() {
     });
 }
 
-// 3. Tabs (Horizontal) Logic
+// 3. Табы (Горизонтальные) Логика - Glass iOS 26 Фильтр
 function initTabs() {
     const tabs = document.querySelectorAll('.filter-tab');
 
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Update UI
-            updateFilterUI(tab.innerText.toLowerCase());
+            const filterType = tab.dataset.filter;
+            updateFilterUI(filterType);
         });
     });
 }
 
-// 4. Folder Menu (Dropdown) Logic
+// 4. Меню папок (выпадающее) Логика
 function initFolderMenu() {
     const folders = document.querySelectorAll('.folder-select');
     const mainMenu = document.getElementById('main-menu');
@@ -75,37 +85,37 @@ function initFolderMenu() {
             const filter = folder.dataset.filter;
             updateFilterUI(filter);
 
-            // Close menu
+            // Закрыть меню
             mainMenu.classList.remove('active');
         });
     });
 }
 
-// Unified Filter Updater (Syncs tabs and logical state)
-function updateFilterUI(filterName) {
-    // 1. Update State
-    currentFilter = filterName.toLowerCase();
+// Объединенный обновлятор фильтра (синхронизирует табы и логическое состояние)
+function updateFilterUI(filterType) {
+    // 1. Обновляем состояние
+    currentFilter = filterType;
 
-    // 2. Update Horizontal Tabs (if matches)
+    // 2. Обновляем горизонтальные табы
     document.querySelectorAll('.filter-tab').forEach(t => {
-        if (t.innerText.toLowerCase() === currentFilter) {
+        if (t.dataset.filter === filterType) {
             t.classList.add('active');
         } else {
             t.classList.remove('active');
         }
     });
 
-    // 3. Re-render Chat List
+    // 3. Перерисовываем список чатов
     renderChatList();
 }
 
 
-// 5. Theme Toggle
+// 5. Переключатель темы
 function initThemeToggle() {
     const toggleItem = document.getElementById('theme-toggle');
     const themeIndicator = document.getElementById('theme-indicator');
 
-    // Load saved theme
+    // Загрузить сохраненную тему
     const savedTheme = localStorage.getItem('xcord_theme');
     if (savedTheme === 'light') {
         isLightTheme = true;
@@ -120,21 +130,31 @@ function initThemeToggle() {
         isLightTheme = !isLightTheme;
         document.body.classList.toggle('theme-light', isLightTheme);
 
-        // Save theme preference
+        // Сохранить выбор темы
         localStorage.setItem('xcord_theme', isLightTheme ? 'light' : 'dark');
     });
 }
 
 
-// 6. Rendering Chat List (Same as before)
+// 6. Рендеринг списка чатов с фильтрацией как в Telegram
 function renderChatList() {
     const chatListContainer = document.querySelector('.chat-list-content');
     if (!chatListContainer) return;
 
-    let filteredChats = CHATS;
-    if (currentFilter !== 'all') {
-        filteredChats = CHATS.filter(chat => chat.folder === currentFilter || chat.type === currentFilter);
+    let filteredChats = [...CHATS];
+    
+    // Фильтруем по текущему фильтру (стиль Telegram)
+    if (currentFilter === 'personal') {
+        filteredChats = filteredChats.filter(chat => chat.type === 'personal');
+    } else if (currentFilter === 'groups') {
+        filteredChats = filteredChats.filter(chat => chat.type === 'group' || chat.type === 'groups');
+    } else if (currentFilter === 'channels') {
+        filteredChats = filteredChats.filter(chat => chat.type === 'channel' || chat.type === 'channels' || chat.type === 'group');
     }
+    // 'all' показывает всё
+
+    // Сортируем по последним (время последнего сообщения)
+    filteredChats.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
 
     const pinnedChats = filteredChats.filter(c => c.pinned);
     const regularChats = filteredChats.filter(c => !c.pinned);
@@ -187,7 +207,7 @@ function createChatItem(chat) {
     return item;
 }
 
-// 7. Rendering Main Chat
+// 7. Рендеринг главного чата
 function renderChat(chat) {
     if (!chat) return;
 
@@ -225,19 +245,19 @@ function initProfileToggle() {
     });
 }
 
-// Profile Modal Functions - iOS 26 Glass
+// Профиль модальные функции - iOS 26 Glass
 function initProfileModal() {
     const modal = document.getElementById('profile-modal');
     const closeBtn = document.getElementById('profile-close');
     const menuProfileBtn = document.getElementById('menu-open-profile');
 
-    // Open from menu button
+    // Открыть из кнопки меню
     menuProfileBtn?.addEventListener('click', () => {
         openProfile();
-        document.getElementById('main-menu').classList.remove('active'); // Close menu
+        document.getElementById('main-menu').classList.remove('active'); // Закрыть меню
     });
 
-    // Open profile with Ctrl+P
+    // Открыть профиль с Ctrl+P
     document.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'p') {
             e.preventDefault();
@@ -245,12 +265,12 @@ function initProfileModal() {
         }
     });
 
-    // Track if user is dragging
+    // Отслеживаем если пользователь тянет
     let isDragging = false;
     let dragStartX = 0;
     let dragStartY = 0;
     
-    // Detect drag start
+    // Определяем начало перетаскивания
     modal?.addEventListener('mousedown', (e) => {
         isDragging = false;
         dragStartX = e.clientX;
@@ -265,21 +285,21 @@ function initProfileModal() {
         }
     });
     
-    // Close handlers
+    // Закрыть обработчики
     closeBtn?.addEventListener('click', (e) => {
         e.stopPropagation();
         closeProfile();
     });
     
-    // Close only when clicking on overlay, NOT during drag
+    // Закрыть только при клике на оверлей, НЕ во время перетаскивания
     modal?.addEventListener('click', (e) => {
-        // Don't close if user was dragging
+        // Не закрывать если пользователь перетаскивал
         if (isDragging) {
             isDragging = false;
             return;
         }
         
-        // Don't close if clicking on profile card or its children
+        // Не закрывать если кликнули на профиль карточку или её детей
         const profileCard = document.getElementById('profile-card');
         if (profileCard?.contains(e.target)) {
             return;
@@ -290,12 +310,12 @@ function initProfileModal() {
         }
     });
 }
-    
+
 function openProfile() {
     const modal = document.getElementById('profile-modal');
     if (modal) {
         modal.classList.add('active');
-        // Update display and re-init icons
+        // Обновить отображение и перезагрузить иконки
         if (typeof updateProfileDisplay === 'function') {
             updateProfileDisplay();
         }

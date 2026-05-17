@@ -143,7 +143,7 @@ function applyTheme(themeId) {
 function createCustomTheme(name = 'Custom Theme') {
     const emptySlot = THEME_SLOTS.custom.findIndex(slot => slot === null);
     if (emptySlot === -1) {
-        alert('Максимум 5 кастомных тем!');
+        alert('РњР°РєСЃРёРјСѓРј 5 РєР°СЃС‚РѕРјРЅС‹С… С‚РµРј!');
         return null;
     }
 
@@ -216,8 +216,11 @@ function updateThemeSelectorUI() {
 
 // Load theme into editor
 function loadThemeToEditor(theme, slotIndex) {
-    document.getElementById('theme-name')?.setAttribute('value', theme.name);
-    document.getElementById('theme-slot-index')?.setAttribute('value', slotIndex);
+    const themeNameEl = document.getElementById('theme-name');
+    if (themeNameEl) themeNameEl.setAttribute('value', theme.name);
+    
+    const themeSlotIndexEl = document.getElementById('theme-slot-index');
+    if (themeSlotIndexEl) themeSlotIndexEl.setAttribute('value', slotIndex);
 
     // Load colors
     Object.keys(theme.colors).forEach(key => {
@@ -225,6 +228,9 @@ function loadThemeToEditor(theme, slotIndex) {
         if (input) input.value = theme.colors[key];
     });
 
-    document.getElementById('theme-wallpaper-blur')?.setAttribute('value', theme.wallpaperBlur);
-    document.getElementById('theme-wallpaper-blur-value')?.textContent = `${theme.wallpaperBlur}px`;
+    const wallpaperBlurEl = document.getElementById('theme-wallpaper-blur');
+    if (wallpaperBlurEl) wallpaperBlurEl.setAttribute('value', theme.wallpaperBlur);
+    
+    const wallpaperBlurValueEl = document.getElementById('theme-wallpaper-blur-value');
+    if (wallpaperBlurValueEl) wallpaperBlurValueEl.textContent = `${theme.wallpaperBlur}px`;
 }

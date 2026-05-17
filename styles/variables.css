@@ -11,7 +11,7 @@
     --bg-modifier-active: rgba(255, 255, 255, 0.1);
     
     /* Glass Effect Colors */
-    --glass-bg: rgba(18, 18, 31, 0.7);
+    --glass-bg: rgba(18, 18, 31, var(--glass-opacity));
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: rgba(0, 0, 0, 0.3);
     
@@ -68,6 +68,12 @@
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
 }
 
+/* Global glass effect - applies dynamic blur and opacity */
+.glass-effect {
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+}
+
 /* Prevent transition on page load */
 .no-transition * {
     transition: none !important;
@@ -96,6 +102,29 @@ body.theme-light {
     --accent-glow: rgba(99, 102, 241, 0.15);
 }
 
+/* Dark Theme - iOS Glass Dark */
+body.theme-dark {
+    --bg-primary: #0a0a12;
+    --bg-secondary: #12121f;
+    --bg-tertiary: #1a1a2e;
+    --bg-modifier-hover: rgba(255, 255, 255, 0.06);
+    --bg-modifier-active: rgba(255, 255, 255, 0.1);
+    
+    --glass-bg: rgba(18, 18, 31, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: rgba(0, 0, 0, 0.3);
+    
+    --header-primary: #ffffff;
+    --header-secondary: rgba(255, 255, 255, 0.7);
+    --text-normal: rgba(255, 255, 255, 0.9);
+    --text-muted: rgba(255, 255, 255, 0.5);
+    
+    --channel-textarea-background: rgba(255, 255, 255, 0.05);
+    --background-floating: rgba(26, 26, 46, 0.9);
+    
+    --accent-glow: rgba(99, 102, 241, 0.4);
+}
+
 /* 1. Navigation Rail (Left) - REMOVED */
 /* .nav-rail { display: none; } */
 
@@ -103,8 +132,8 @@ body.theme-light {
 .chat-list-sidebar {
     width: 320px;
     background: var(--glass-bg);
-    backdrop-filter: blur(30px) saturate(150%);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--glass-border);
@@ -125,6 +154,24 @@ body {
     overflow: hidden;
     user-select: none;
     transition: background 0.3s ease;
+    /* Default to dark theme */
+    --bg-primary: #0a0a12;
+    --bg-secondary: #12121f;
+    --bg-tertiary: #1a1a2e;
+    --bg-modifier-hover: rgba(255, 255, 255, 0.06);
+    --bg-modifier-active: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(18, 18, 31, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: rgba(0, 0, 0, 0.3);
+    --glass-blur: 30px;
+    --glass-opacity: 70%;
+    --header-primary: #ffffff;
+    --header-secondary: rgba(255, 255, 255, 0.7);
+    --text-normal: rgba(255, 255, 255, 0.9);
+    --text-muted: rgba(255, 255, 255, 0.5);
+    --channel-textarea-background: rgba(255, 255, 255, 0.05);
+    --background-floating: rgba(26, 26, 46, 0.9);
+    --accent-glow: rgba(99, 102, 241, 0.4);
 }
 
 /* Background pattern for app container */

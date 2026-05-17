@@ -4,23 +4,22 @@ import uuid
 import pygame
 import threading
 import queue
-import time
 from openai import OpenAI
 from huggingface_hub import InferenceClient
 import config
 
-# === gTTS ===
+# === gTTS — быстрая озвучка ===
 from gtts import gTTS
-# =======================
+# ===============================
 
-_speak_queue: "queue.Queue[tuple[str, str]]" = queue.Queue()
+_speak_queue = queue.Queue()
 _speak_worker_started = False
 _tts_lock = threading.Lock()
 
 _utterance_seq = 0
 
 
-def play_audio(file_path: str):
+def play_audio(file_path):
     """Воспроизводит аудио-файл через PyGame"""
     try:
         pygame.time.wait(100)
@@ -39,17 +38,13 @@ def play_audio(file_path: str):
             pass
             
         if os.path.exists(file_path):
-            last_err = None
             for _ in range(10):
                 try:
                     os.remove(file_path)
-                    last_err = None
                     break
-                except Exception as e:
-                    last_err = e
+                except Exception:
+                    import time
                     time.sleep(0.1)
-            if last_err is not None:
-                print(f"Ошибка удаления файла озвучки: {last_err}")
     except Exception as e:
         print(f"Ошибка воспроизведения: {e}")
 
@@ -68,10 +63,9 @@ def _speak_worker():
         text, filename = _speak_queue.get()
         try:
             with _tts_lock:
-                # === gTTS — озвучиваем ВЕСЬ текст целиком ===
+                # gTTS — быстрая озвучка
                 tts_obj = gTTS(text=text, lang=config.XTTS_LANGUAGE, slow=False)
                 tts_obj.save(filename)
-                # ===========================================
             
             try:
                 if pygame.mixer.get_init() is None:
@@ -87,10 +81,8 @@ def _speak_worker():
             _speak_queue.task_done()
 
 
-def speak(text: str):
-    """
-    Теперь озвучивает весь текст одной репликой (без разбиения на части)
-    """
+def speak(text):
+    """Озвучивает текст через gTTS (быстро)"""
     global _utterance_seq
     _utterance_seq += 1
     seq = _utterance_seq
@@ -100,17 +92,16 @@ def speak(text: str):
     if not text or not text.strip():
         return
 
-    # Если пришла новая реплика — отменяем предыдущие
     if seq != _utterance_seq:
         return
 
-    # Генерируем уникальное имя файла (gTTS использует mp3)
     file_path = f"{uuid.uuid4().hex}.mp3"
-    _speak_queue.put((text.strip(), file_path))   # передаём весь текст целиком
+    _speak_queue.put((text.strip(), file_path))
 
 
-# === ОСНОВНАЯ ФУНКЦИЯ ===
 def jarvis(message):
+    """Основная функция Jarvis"""
+    # Генерация картинок
     for word in message.split():
         if "картин" in word.lower() or "изображен" in word.lower() or "фот" in word.lower() or "рисуй" in word.lower():
             client = InferenceClient(
@@ -156,9 +147,9 @@ def jarvis(message):
     if executed_cmd:
         final_answer = (final_answer + f"\n\nВыполнено: {executed_cmd}").strip()
 
-    # Озвучиваем весь ответ целиком
-    if spoken_text:
-        speak(spoken_text)
+    # Озвучивание ОТКЛЮЧЕНО - теперь кнопка TTS под сообщением
+    # if spoken_text:
+    #     speak(spoken_text)
 
     return final_answer
 
@@ -169,6 +160,15 @@ if __name__ == "__main__":
     pygame.mixer.init()
     print("PyGame initialized OK")
     print("--------------------------------")
+    print("gTTS mode — быстрая озвучка")
+    print("--------------------------------")
+    while True:
+        msg = input("Ты: ")
+        if msg.lower() in ["выход", "exit"]: 
+            break
+        print("--------------------------------")
+        print("JARVIS:", jarvis(message=msg))
+        print("--------------------------------")
     print("gTTS mode — полный текст одной репликой")
     print("--------------------------------")
     while True:

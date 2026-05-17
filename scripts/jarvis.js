@@ -167,4 +167,20 @@ function stopVoiceListening() {
 }
 
 // Auto-init when DOM ready
-document.addEventListener('DOMContentLoaded', initJarvis);
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('[Jarvis] Initializing...');
+    initJarvis();
+    
+    // Test Jarvis API
+    fetch(`${JARVIS_API}/jarvis/status`)
+        .then(r => r.json())
+        .then(data => {
+            console.log('[Jarvis] Status:', data);
+            if (!data.available) {
+                console.warn('[Jarvis] Not available on backend!');
+            }
+        })
+        .catch(err => {
+            console.error('[Jarvis] API connection error:', err);
+        });
+});

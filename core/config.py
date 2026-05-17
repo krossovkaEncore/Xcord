@@ -6,10 +6,7 @@ tJarvisTg=''
 
 whiteList = [776247660]
 SAFE_COMMANDS = ["shutdown", "dir", "echo", "tasklist", "taskkill", "start"]
-SPEAKER_WAV = "voiceSample/Mixail.wav"
-XTTS_MODEL = "tts_models/multilingual/multi-dataset/xtts_v2"
 XTTS_LANGUAGE = "ru"
-XTTS_STREAM_SAMPLE_RATE = 24000
 TTS_MAX_CHARS = 600
 
 prompt = '''

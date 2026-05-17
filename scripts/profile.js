@@ -1,5 +1,5 @@
 // ============================================
-// Profile System Data - iOS 26 Glass Style
+// Профиль система даных - iOS 26 Glass стиль
 // ============================================
 
 const PROFILE_DATA = {
@@ -15,15 +15,15 @@ const PROFILE_DATA = {
     additionalText: '',
     showComments: true,
     
-    // iOS 26 Glass Settings
+    // iOS 26 Glass настройки
     glassOpacity: 70,
     glassColor: '#1a1a2e',
-    glassMode: 'frosted', // 'frosted' or 'tinted'
+    glassMode: 'frosted', // 'frosted' или 'tinted'
     
     status: 'online' // online, offline, ingame
 };
 
-// Sample Comments Data
+// Пример комментов данные
 const PROFILE_COMMENTS = [
     { id: 1, author: 'Alex', avatar: '', text: 'Крутой проект! Удачи с разработкой 🚀', time: '2 часа назад' },
     { id: 2, author: 'Maria', avatar: '', text: 'Очень красивый интерфейс', time: 'Вчера' },
@@ -31,7 +31,7 @@ const PROFILE_COMMENTS = [
 ];
 
 // ============================================
-// Storage Functions
+// Функции сохранения
 // ============================================
 
 function saveProfileData() {
@@ -46,28 +46,28 @@ function loadProfileData() {
 }
 
 // ============================================
-// Update Profile Display - iOS 26 Glass
+// Обновить профиль отображение - iOS 26 Glass
 // ============================================
 
 function updateProfileDisplay() {
-    // Username
+    // Имя юзера
     const nameEl = document.getElementById('profile-name');
     if (nameEl) nameEl.textContent = PROFILE_DATA.username;
 
-    // Avatar
+    // Аватарка
     const avatarEl = document.getElementById('profile-avatar');
     if (avatarEl && PROFILE_DATA.avatar) {
         avatarEl.src = PROFILE_DATA.avatar;
     }
 
-    // Real Name
+    // Реальное имя
     const realNameEl = document.getElementById('profile-realname');
     if (realNameEl) {
         realNameEl.textContent = PROFILE_DATA.realName;
         realNameEl.style.display = PROFILE_DATA.showRealName ? 'block' : 'none';
     }
 
-    // Location
+    // Локация
     const locationEl = document.getElementById('profile-location');
     if (locationEl) {
         const locationSpan = locationEl.querySelector('span');
@@ -75,13 +75,13 @@ function updateProfileDisplay() {
         locationEl.style.display = PROFILE_DATA.showLocation ? 'flex' : 'none';
     }
 
-    // Bio with collapse
+    // Био с сворачиванием
     const bioEl = document.getElementById('profile-bio');
     const bioExpandBtn = document.getElementById('profile-bio-expand');
     if (bioEl) {
         bioEl.textContent = PROFILE_DATA.bio || 'Нажми редактировать, чтобы добавить описание...';
         
-        // Check if bio needs collapse (>7 lines roughly ~280 chars)
+        // проверяем если био длинное надо свернуть (>7 строк примерно ~280 символов)
         if (PROFILE_DATA.bio && PROFILE_DATA.bio.length > 280) {
             bioEl.classList.add('collapsed');
             if (bioExpandBtn) bioExpandBtn.style.display = 'block';
@@ -91,7 +91,7 @@ function updateProfileDisplay() {
         }
     }
 
-    // Media Section
+    // Секция медиа
     const mediaSection = document.getElementById('profile-media-section');
     const mediaContent = document.getElementById('profile-media-content');
     const mediaVideo = document.getElementById('profile-media-video');
@@ -115,7 +115,7 @@ function updateProfileDisplay() {
         mediaSection.style.display = 'none';
     }
 
-    // Additional Text
+    // Доп текст
     const additionalSection = document.getElementById('profile-additional-section');
     const additionalText = document.getElementById('profile-additional-text');
     if (additionalSection && PROFILE_DATA.additionalText) {
@@ -125,13 +125,13 @@ function updateProfileDisplay() {
         additionalSection.style.display = 'none';
     }
 
-    // Status Indicator
+    // Индикатор статуса
     const statusDot = document.getElementById('profile-status-dot');
     if (statusDot) {
         statusDot.className = 'profile-status-indicator ' + PROFILE_DATA.status;
     }
 
-    // Background GIF
+    // Фоновое GIF
     const bgGif = document.getElementById('profile-bg-gif');
     if (bgGif && PROFILE_DATA.backgroundGif) {
         bgGif.src = PROFILE_DATA.backgroundGif;
@@ -140,10 +140,10 @@ function updateProfileDisplay() {
         bgGif.style.display = 'none';
     }
 
-    // Apply iOS 26 Glass Settings
+    // Применяем iOS 26 Glass настройки
     applyGlassSettings();
     
-    // Update Comments
+    // Обновляем комменты
     updateCommentsDisplay();
 }
 
@@ -151,11 +151,11 @@ function applyGlassSettings() {
     const card = document.getElementById('profile-card');
     if (!card) return;
     
-    // Apply opacity
+    // Применяем прозрачность
     const opacity = PROFILE_DATA.glassOpacity / 100;
     const glassColor = PROFILE_DATA.glassColor;
     
-    // Convert hex to rgba
+    // Конвертируем hex в rgba
     const r = parseInt(glassColor.slice(1, 3), 16);
     const g = parseInt(glassColor.slice(3, 5), 16);
     const b = parseInt(glassColor.slice(5, 7), 16);
@@ -178,6 +178,7 @@ function updateCommentsDisplay() {
     
     if (!commentsSection) return;
     
+    // если комменты скрыты то не показываем
     if (!PROFILE_DATA.showComments) {
         commentsSection.style.display = 'none';
         return;
@@ -204,7 +205,7 @@ function updateCommentsDisplay() {
 }
 
 // ============================================
-// Bio Expand Function
+// Кнопка развернуть био функция
 // ============================================
 
 function initBioExpand() {
@@ -220,7 +221,7 @@ function initBioExpand() {
 }
 
 // ============================================
-// Editor Functions
+// Функции редактора
 // ============================================
 
 function initProfileEditor() {
@@ -228,7 +229,7 @@ function initProfileEditor() {
     const editToggle = document.getElementById('profile-edit-toggle');
     const saveBtn = document.getElementById('editor-save');
     
-    // Toggle editor
+    // Переключить редактор
     editToggle?.addEventListener('click', () => {
         editor.classList.toggle('active');
         if (editor.classList.contains('active')) {
@@ -236,48 +237,48 @@ function initProfileEditor() {
         }
     });
     
-    // Save button
+    // Кнопка сохранить
     saveBtn?.addEventListener('click', () => {
         saveEditorValues();
         editor.classList.remove('active');
     });
     
-    // Live preview for username
+    // Живой предпросмотр для имени юзера
     const usernameInput = document.getElementById('editor-username');
     usernameInput?.addEventListener('input', (e) => {
         const nameEl = document.getElementById('profile-name');
         if (nameEl) nameEl.textContent = e.target.value || 'Username';
     });
     
-    // Live preview for real name
+    // Живой предпросмотр для реального имени
     const realNameInput = document.getElementById('editor-realname');
     realNameInput?.addEventListener('input', (e) => {
         const realNameEl = document.getElementById('profile-realname');
         if (realNameEl) realNameEl.textContent = e.target.value;
     });
     
-    // Show/hide real name
+    // Показать/скрыть реальное имя
     const showRealName = document.getElementById('editor-show-realname');
     showRealName?.addEventListener('change', (e) => {
         const realNameEl = document.getElementById('profile-realname');
         if (realNameEl) realNameEl.style.display = e.target.checked ? 'block' : 'none';
     });
     
-    // Show/hide location
+    // Показать/скрыть локацию
     const showLocation = document.getElementById('editor-show-location');
     showLocation?.addEventListener('change', (e) => {
         const locationEl = document.getElementById('profile-location');
         if (locationEl) locationEl.style.display = e.target.checked ? 'flex' : 'none';
     });
     
-    // Live preview for location
+    // Живой предпросмотр для локации
     const locationInput = document.getElementById('editor-location');
     locationInput?.addEventListener('input', (e) => {
         const locationSpan = document.querySelector('#profile-location span');
         if (locationSpan) locationSpan.textContent = e.target.value;
     });
     
-    // Live preview for bio
+    // Живой предпросмотр для био
     const bioInput = document.getElementById('editor-bio');
     bioInput?.addEventListener('input', (e) => {
         const bioEl = document.getElementById('profile-bio');
@@ -295,7 +296,7 @@ function initProfileEditor() {
         }
     });
     
-    // Glass opacity slider
+    // Слайдер прозрачности стекла
     const opacitySlider = document.getElementById('editor-opacity');
     const opacityValue = document.getElementById('opacity-value');
     opacitySlider?.addEventListener('input', (e) => {
@@ -304,14 +305,14 @@ function initProfileEditor() {
         applyGlassSettings();
     });
     
-    // Glass color picker
+    // Выбор цвета стекла
     const glassColorPicker = document.getElementById('editor-glass-color');
     glassColorPicker?.addEventListener('input', (e) => {
         PROFILE_DATA.glassColor = e.target.value;
         applyGlassSettings();
     });
     
-    // Glass mode toggle
+    // Переключатель режима стекла
     const glassModeBtns = document.querySelectorAll('.editor-toggle-btn');
     glassModeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -322,7 +323,7 @@ function initProfileEditor() {
         });
     });
     
-    // Background GIF upload
+    // Загрузка фонового GIF
     const bgFileInput = document.getElementById('editor-bg-file');
     bgFileInput?.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -340,7 +341,7 @@ function initProfileEditor() {
         }
     });
     
-    // Background clear
+    // Очистить фон
     const bgClearBtn = document.getElementById('editor-bg-clear');
     bgClearBtn?.addEventListener('click', () => {
         PROFILE_DATA.backgroundGif = '';
@@ -348,7 +349,7 @@ function initProfileEditor() {
         if (bgGif) bgGif.style.display = 'none';
     });
     
-    // Avatar upload
+    // Загрузка аватарки
     const avatarFileInput = document.getElementById('editor-avatar-file');
     avatarFileInput?.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -363,7 +364,7 @@ function initProfileEditor() {
         }
     });
     
-    // Media upload
+    // Загрузка медиа
     const mediaFileInput = document.getElementById('editor-media-file');
     mediaFileInput?.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -377,14 +378,14 @@ function initProfileEditor() {
         }
     });
     
-    // Media clear
+    // Очистить медиа
     const mediaClearBtn = document.getElementById('editor-media-clear');
     mediaClearBtn?.addEventListener('click', () => {
         PROFILE_DATA.media = '';
         updateProfileDisplay();
     });
     
-    // Additional text
+    // Доп текст
     const additionalInput = document.getElementById('editor-additional');
     additionalInput?.addEventListener('input', (e) => {
         PROFILE_DATA.additionalText = e.target.value;
@@ -425,7 +426,7 @@ function saveEditorValues() {
 }
 
 // ============================================
-// Initialization
+// Инициализация
 // ============================================
 
 function initProfile() {
@@ -434,11 +435,11 @@ function initProfile() {
     initProfileEditor();
     initBioExpand();
     
-    // Re-init icons after DOM update
+    // Перезагрузить иконки после обновления DOM
     if (window.lucide) {
         lucide.createIcons();
     }
 }
 
-// Auto-init when DOM ready
+// Авто инициализация когда DOM готов
 document.addEventListener('DOMContentLoaded', initProfile);
