@@ -1,186 +1,166 @@
-// ============================================
-// Jarvis AI Integration
-// ============================================
-
-const JARVIS_API = "http://localhost:8000"; // FastAPI server URL
+// Динамический порт сервера (используем текущий host)
+const JARVIS_API = window.location.origin;
 
 let jarvisMessages = [];
 let isJarvisListening = false;
+window.isJarvisChat = false;
+
+console.log('[Jarvis] Module loaded, API:', JARVIS_API);
 
 function initJarvis() {
-    const modal = document.getElementById('jarvis-modal');
-    const openBtn = document.getElementById('jarvis-btn');
-    const closeBtn = document.getElementById('jarvis-close');
-    const sendBtn = document.getElementById('jarvis-send');
-    const input = document.getElementById('jarvis-input');
-    const voiceBtn = document.getElementById('jarvis-voice');
-
-    // Open Jarvis modal
-    openBtn?.addEventListener('click', () => {
-        modal?.classList.add('active');
-        initIcons();
-        // Focus input
-        setTimeout(() => input?.focus(), 100);
-    });
-
-    // Close Jarvis modal
-    closeBtn?.addEventListener('click', () => {
-        modal?.classList.remove('active');
-    });
-
-    // Close on backdrop click
-    modal?.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('active');
-        }
-    });
-
-    // Send message on button click
-    sendBtn?.addEventListener('click', sendJarvisCommand);
-
-    // Send message on Enter
-    input?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendJarvisCommand();
-        }
-    });
-
-    // Voice button
-    voiceBtn?.addEventListener('click', toggleVoiceListening);
+    console.log('[Jarvis] initJarvis() called');
 }
 
-async function sendJarvisCommand() {
-    const input = document.getElementById('jarvis-input');
-    const messagesContainer = document.getElementById('jarvis-messages');
-    const sendBtn = document.getElementById('jarvis-send');
+function openJarvisChat() {
+    console.log('[Jarvis] openJarvisChat() called');
     
-    const command = input?.value.trim();
-    if (!command) return;
+    window.isJarvisChat = true;
+    window.currentChat = null;
+    window.currentChatName = null;
+    window.messages = [];
+    
+    console.log('[Jarvis] isJarvisChat:', window.isJarvisChat);
+    
+    const chatHeader = document.querySelector('.header-text h3');
+    const headerStatus = document.querySelector('.header-status');
+    if (chatHeader) chatHeader.textContent = 'Jarvis AI';
+    if (headerStatus) headerStatus.textContent = 'AI Assistant';
+    
+    const inputArea = document.getElementById('chat-input-area');
+    if (inputArea) inputArea.style.display = 'flex';
+    
+    const container = document.getElementById('messages-container');
+    if (container) {
+        container.innerHTML = `
+            <div style="text-align:center;padding:40px;color:var(--text-muted);">
+                <img src="assets/avatars/jarvis.png" alt="Jarvis" style="width:80px;height:80px;border-radius:50%;margin-bottom:16px;">
+                <h3>Jarvis AI</h3>
+                <p>Привет! Я Jarvis. Задайте любой вопрос.</p>
+            </div>
+        `;
+    }
+    
+    const input = document.getElementById('message-input');
+    if (input) {
+        input.value = '';
+        input.placeholder = 'Спросите Jarvis...';
+        input.focus();
+    }
+    
+    console.log('[Jarvis] Chat opened');
+}
+    
+async function sendJarvisMessage(text) {
+    console.log('[Jarvis] >>> sendJarvisMessage:', text);
+    
+    if (!text || !text.trim()) {
+        console.warn('[Jarvis] Empty text');
+        return;
+    }
 
-    // Add user message to UI
-    addJarvisMessage(command, 'user');
-    input.value = '';
+    const container = document.getElementById('messages-container');
+    if (!container) {
+        console.error('[Jarvis] ERROR: container not found');
+        return;
+    }
 
-    // Disable send button
-    sendBtn.disabled = true;
+    // Удаляем welcome
+    const welcome = container.querySelector('div[style*="text-align:center"]');
+    if (welcome) welcome.remove();
 
-    // Show typing indicator
-    showTypingIndicator();
+    // Сообщение пользователя
+    const userMsg = document.createElement('div');
+    userMsg.className = 'message-group';
+    userMsg.innerHTML = `
+        <div class="message-text" style="background:var(--accent-primary);color:white;padding:10px 14px;border-radius:8px;margin:8px 16px;max-width:70%;align-self:flex-end;">
+            ${escapeHtml(text)}
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin:4px 16px;text-align:right;">${formatTime(Date.now()/1000)}</div>
+    `;
+    container.appendChild(userMsg);
+    container.scrollTop = container.scrollHeight;
+
+    // Индикатор набора
+    const typing = document.createElement('div');
+    typing.className = 'message-group';
+    typing.innerHTML = `
+        <div class="message-avatar"><img src="assets/avatars/jarvis.png" style="width:32px;height:32px;border-radius:50%;"></div>
+        <div style="background:var(--bg-modifier-hover);padding:10px 14px;border-radius:8px;margin:8px 16px;">
+            <div class="typing-indicator"><span></span><span></span><span></span></div>
+        </div>
+    `;
+    container.appendChild(typing);
 
     try {
+        console.log('[Jarvis] → API request...');
+        
         const response = await fetch(`${JARVIS_API}/jarvis/command`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ command: command }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command: text })
         });
 
+        console.log('[Jarvis] ← Status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('[Jarvis] ← Response:', data);
         
-        // Remove typing indicator
-        removeTypingIndicator();
+        typing.remove();
 
-        if (data.ok) {
-            addJarvisMessage(data.response, 'bot');
-        } else {
-            addJarvisMessage(`Ошибка: ${data.error}`, 'error');
-        }
+        const botMsg = document.createElement('div');
+        botMsg.className = 'message-group';
+        const reply = data.response || data.error || 'Пустой ответ';
+        botMsg.innerHTML = `
+            <div class="message-avatar"><img src="assets/avatars/jarvis.png" style="width:32px;height:32px;border-radius:50%;"></div>
+            <div style="background:var(--bg-modifier-hover);padding:10px 14px;border-radius:8px;margin:8px 16px;max-width:70%;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">
+                    <span style="font-weight:600;color:var(--accent-primary);">Jarvis AI</span>
+                    <span style="margin-left:8px;">${formatTime(Date.now()/1000)}</span>
+                </div>
+                <div style="color:var(--text-normal);word-wrap:break-word;">${escapeHtml(reply)}</div>
+            </div>
+        `;
+        container.appendChild(botMsg);
+        container.scrollTop = container.scrollHeight;
+
     } catch (error) {
-        removeTypingIndicator();
+        console.error('[Jarvis] ERROR:', error);
+        typing.remove();
         
-        // Check if server is running
-        if (error.message.includes('Failed to fetch')) {
-            addJarvisMessage('Не удалось подключиться к серверу Jarvis. Убедитесь, что запущен core/app.py', 'error');
-        } else {
-            addJarvisMessage(`Ошибка: ${error.message}`, 'error');
-        }
-    }
-
-    // Re-enable send button
-    sendBtn.disabled = false;
-    input?.focus();
-}
-
-function addJarvisMessage(text, type) {
-    const messagesContainer = document.getElementById('jarvis-messages');
-    if (!messagesContainer) return;
-
-    const messageEl = document.createElement('div');
-    messageEl.className = `jarvis-message ${type}`;
-    messageEl.innerHTML = text.replace(/\n/g, '<br>');
-    
-    messagesContainer.appendChild(messageEl);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-function showTypingIndicator() {
-    const messagesContainer = document.getElementById('jarvis-messages');
-    if (!messagesContainer) return;
-
-    const typingEl = document.createElement('div');
-    typingEl.className = 'jarvis-typing';
-    typingEl.id = 'jarvis-typing';
-    typingEl.innerHTML = `
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-    `;
-    
-    messagesContainer.appendChild(typingEl);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-function removeTypingIndicator() {
-    const typingEl = document.getElementById('jarvis-typing');
-    if (typingEl) {
-        typingEl.remove();
+        const errMsg = document.createElement('div');
+        errMsg.className = 'message-group';
+        errMsg.innerHTML = `
+            <div class="message-avatar"><img src="assets/avatars/jarvis.png" style="width:32px;height:32px;border-radius:50%;"></div>
+            <div style="background:rgba(239,68,68,0.2);padding:10px 14px;border-radius:8px;margin:8px 16px;max-width:70%;border:1px solid #ef4444;">
+                <div style="color:#ef4444;">
+                    <strong>Ошибка Jarvis</strong><br>
+                    <small>${error.message}</small><br>
+                    <small>Возможно HF токен устарел</small>
+                </div>
+            </div>
+        `;
+        container.appendChild(errMsg);
     }
 }
 
-function toggleVoiceListening() {
-    const voiceBtn = document.getElementById('jarvis-voice');
-    
-    if (isJarvisListening) {
-        stopVoiceListening();
-    } else {
-        startVoiceListening();
-    }
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
-function startVoiceListening() {
-    const voiceBtn = document.getElementById('jarvis-voice');
-    isJarvisListening = true;
-    
-    voiceBtn?.classList.add('listening');
-    addJarvisMessage('Слушаю... Скажите "Jarvis" для активации', 'bot');
-    
-    // Note: Actual voice recognition requires the listener.py to be running
-    // This is a placeholder for the UI - the actual voice input comes from core/listener.py
+function formatTime(ts) {
+    if (!ts) return '';
+    const d = new Date(ts * 1000);
+    return d.toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
 }
 
-function stopVoiceListening() {
-    const voiceBtn = document.getElementById('jarvis-voice');
-    isJarvisListening = false;
-    
-    voiceBtn?.classList.remove('listening');
-}
+document.addEventListener('DOMContentLoaded', () => initJarvis());
 
-// Auto-init when DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('[Jarvis] Initializing...');
-    initJarvis();
-    
-    // Test Jarvis API
-    fetch(`${JARVIS_API}/jarvis/status`)
-        .then(r => r.json())
-        .then(data => {
-            console.log('[Jarvis] Status:', data);
-            if (!data.available) {
-                console.warn('[Jarvis] Not available on backend!');
-            }
-        })
-        .catch(err => {
-            console.error('[Jarvis] API connection error:', err);
-        });
-});
+window.openJarvisChat = openJarvisChat;
+window.sendJarvisMessage = sendJarvisMessage;
+

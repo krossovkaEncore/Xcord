@@ -1,193 +1,94 @@
 /**
- * Play TTS для сообщения (озвучка по кнопке)
- */
-async function playTTS(messageIndex) {
-    const msg = APP_STATE.messages[messageIndex];
-    if (!msg || !msg.text) return;
-
-    try {
-        const btn = document.querySelector(`button[onclick="playTTS(${messageIndex})"]`);
-        if (btn) {
-            btn.innerHTML = `<i data-lucide="loader-2" class="spin"></i>`;
-            initIcons();
-        }
-        
-        // Запрос к API для генерации аудио
-        const response = await fetch('/jarvis/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: msg.text })
-        });
-        
-        const data = await response.json();
-        
-        if (data.ok && data.audio_url) {
-            // Воспроизведение аудио
-            const audio = new Audio(data.audio_url);
-            audio.play();
-            
-            if (btn) {
-                btn.innerHTML = `<i data-lucide="volume-2"></i>`;
-                initIcons();
-            }
-        } else {
-            throw new Error(data.error || 'Ошибка TTS');
-        }
-    } catch (error) {
-        console.error('[TTS] Error:', error);
-        alert('Не удалось воспроизвести аудио: ' + error.message);
-        
-        const btn = document.querySelector(`button[onclick="playTTS(${messageIndex})"]`);
-        if (btn) {
-            btn.innerHTML = `<i data-lucide="volume-2"></i>`;
-            initIcons();
-        }
-    }
-}
-
-/**
- * Render messages
+ * Xcord P2P - Main Application Logic
  */
 
-// ============================================
-// Global State
-// ============================================
+
 const APP_STATE = {
     initialized: false,
-    reticulumReady: false,
-    myPeerHash: null,
+    p2pReady: false,
+    username: null,
+    myClientId: null,
     contacts: [],
     currentChat: null,
     messages: [],
-    sseConnection: null
+    reconnecting: false
 };
 
-// ============================================
-// Initialize Application
-// ============================================
 async function initXcord() {
-    console.log('🚀 Initializing Xcord...');
-    
     try {
-        // 1. Load settings
         if (typeof loadSettings === 'function') {
             loadSettings();
         }
         
-        // 2. Initialize Reticulum
-        await initReticulum();
+        const username = prompt('Введите ваше имя пользователя:', 'user_' + Math.random().toString(36).substr(2, 6));
+        if (!username) {
+            throw new Error('Имя пользователя не введено');
+        }
+        APP_STATE.username = username;
         
-        // 3. Setup UI
+        await connectP2P(username);
+        
         setupUI();
         
-        // 4. Connect SSE for real-time messages
-        connectSSE();
-        
         APP_STATE.initialized = true;
-        console.log('✅ Xcord initialized successfully');
         
     } catch (error) {
-        console.error('❌ Initialization error:', error);
+        console.error('Initialization error:', error);
         showError('Ошибка инициализации: ' + error.message);
     }
 }
 
-// ============================================
-// Reticulum Integration
-// ============================================
-async function initReticulum() {
-    console.log('🔗 Initializing Reticulum network...');
-    
+async function connectP2P(username) {
     try {
-        const result = await xcordReticulum.init('./xcord_data');
+        await xcordP2P.connect(username);
         
-        APP_STATE.reticulumReady = true;
-        APP_STATE.myPeerHash = result.peer_hash;
+        APP_STATE.p2pReady = true;
+        APP_STATE.myClientId = xcordP2P.getClientId();
         
-        console.log('✅ Reticulum ready');
-        console.log('📝 My peer hash:', APP_STATE.myPeerHash);
+        xcordP2P.onMessageReceived = (msg) => {
+            handleIncomingMessage(msg);
+        };
         
-        // Show peer hash in UI
-        updatePeerHashUI(APP_STATE.myPeerHash);
+        updateConnectionUI(true, username);
         
-        return result;
     } catch (error) {
-        console.error('❌ Reticulum init failed:', error);
-        APP_STATE.reticulumReady = false;
+        console.error('P2P connection failed:', error);
+        APP_STATE.p2pReady = false;
+        showError('Не удалось подключиться к P2P сети');
         throw error;
     }
 }
 
-function updatePeerHashUI(hash) {
-    const peerHashElement = document.getElementById('my-peer-hash');
-    if (peerHashElement) {
-        peerHashElement.textContent = hash;
-    }
-    
-    // Copy to clipboard on click
-    const copyBtn = document.getElementById('copy-peer-hash');
-    if (copyBtn) {
-        copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(hash).then(() => {
-                showNotification('Peer hash скопирован!');
-            });
-        });
+function updateConnectionUI(connected, username) {
+    const statusElement = document.getElementById('connection-status');
+    if (statusElement) {
+        statusElement.textContent = connected 
+            ? `Подключено как ${username}` 
+            : 'Отключено';
+        statusElement.className = connected ? 'status-online' : 'status-offline';
     }
 }
 
-// ============================================
-// SSE Connection for Real-time Messages
-// ============================================
-function connectSSE() {
-    console.log('📡 Connecting to message stream...');
+function handleIncomingMessage(msg) {
+    APP_STATE.messages.push(msg);
     
-    const eventSource = xcordReticulum.subscribeToMessages((newMessages) => {
-        console.log('📨 New messages received:', newMessages);
-        
-        // Update chat list
-        if (typeof updateChatList === 'function') {
-            updateChatList();
-        }
-        
-        // Update current chat if open
-        if (APP_STATE.currentChat) {
-            loadChatMessages(APP_STATE.currentChat);
-        }
-        
-        // Show notification
-        showNotification(`Получено ${newMessages.length} новых сообщений`);
-    });
+    renderMessages();
     
-    APP_STATE.sseConnection = eventSource;
+    if (typeof updateChatList === 'function') {
+        updateChatList();
+    }
+    
+    showNotification(`Сообщение от ${msg.sender}`);
 }
 
-// ============================================
-// Contact Management
-// ============================================
-async function addContact(nickname, peerHash) {
+async function loadContacts() {
     try {
-        const result = await xcordReticulum.addPeer(nickname, peerHash);
-        
-        APP_STATE.contacts.push({
-            nickname,
-            peerHash,
-            lastMessage: null,
-            unread: 0
-        });
-        
+        const result = await xcordP2P.getPeers();
+        APP_STATE.contacts = result.peers || [];
         renderContacts();
-        showNotification(`Контакт "${nickname}" добавлен`);
-        
-        return result;
     } catch (error) {
-        console.error('❌ Failed to add contact:', error);
-        showError('Не удалось добавить контакт');
+        console.error('Failed to load contacts:', error);
     }
-}
-
-async function getContacts() {
-    const status = await xcordReticulum.getStatus();
-    return status.peers || [];
 }
 
 function renderContacts() {
@@ -204,12 +105,9 @@ function renderContacts() {
                 <i data-lucide="user"></i>
             </div>
             <div class="contact-info">
-                <div class="contact-name">${contact.nickname}</div>
-                <div class="contact-hash">${contact.peerHash}</div>
+                <div class="contact-name">${contact.username}</div>
+                <div class="contact-hash">ID: ${contact.client_id}</div>
             </div>
-            <button class="contact-remove-btn" onclick="removeContact('${contact.peerHash}')">
-                <i data-lucide="x"></i>
-            </button>
         `;
         
         contactEl.addEventListener('click', () => {
@@ -222,47 +120,53 @@ function renderContacts() {
     initIcons();
 }
 
-// ============================================
-// Chat & Messages
-// ============================================
 async function sendMessage(contact, text) {
     if (!text.trim()) return;
     
     try {
-        const result = await xcordReticulum.sendMessage(contact.nickname, text);
+        const success = xcordP2P.sendMessage(contact.username, text);
         
-        // Add to local messages
+        if (!success) {
+            showError('Не удалось отправить: нет подключения');
+            return;
+        }
+        
         const message = {
             id: Date.now().toString(),
-            sender: 'me',
+            sender: APP_STATE.username,
             text: text,
-            timestamp: new Date(),
-            status: 'sent'
+            timestamp: Date.now() / 1000,
+            target: contact.username
         };
         
         APP_STATE.messages.push(message);
         
-        // Clear input
         const input = document.getElementById('message-input');
         if (input) input.value = '';
         
-        // Update UI
         renderMessages();
         
-        return result;
     } catch (error) {
-        console.error('❌ Failed to send message:', error);
+        console.error('Failed to send message:', error);
         showError('Не удалось отправить сообщение');
     }
 }
 
 async function loadChatMessages(contact) {
     try {
-        const result = await xcordReticulum.getMessages(contact.nickname);
+        const result = await xcordP2P.getMessages();
         APP_STATE.messages = result.messages || [];
+        
+        if (contact) {
+            APP_STATE.messages = APP_STATE.messages.filter(
+                m => (m.sender === contact.username && m.target === APP_STATE.username) ||
+                     (m.sender === APP_STATE.username && m.target === contact.username)
+            );
+        }
+        
         renderMessages();
     } catch (error) {
-        console.error('❌ Failed to load messages:', error);
+        console.error('Failed to load messages:', error);
     }
 }
 
@@ -273,12 +177,11 @@ function renderMessages() {
     container.innerHTML = '';
     
     APP_STATE.messages.forEach((msg, index) => {
+        const isOwn = msg.sender === APP_STATE.username;
         const msgEl = document.createElement('div');
-        msgEl.className = `message ${msg.sender === 'me' ? 'message-own' : 'message-other'}`;
+        msgEl.className = `message ${isOwn ? 'message-own' : 'message-other'}`;
         
-        // Добавляем кнопку TTS для Jarvis сообщений
-        const isJarvis = msg.sender === 'jarvis';
-        const ttsButton = isJarvis ? `
+        const ttsButton = !isOwn ? `
             <button class="message-tts-btn" onclick="playTTS(${index})" title="Озвучить">
                 <i data-lucide="volume-2"></i>
             </button>
@@ -295,37 +198,31 @@ function renderMessages() {
     
     initIcons();
     
-    // Scroll to bottom
     container.scrollTop = container.scrollHeight;
 }
 
 function openChat(contact) {
     APP_STATE.currentChat = contact;
-    APP_STATE.messages = [];
     
-    // Update UI
-    document.getElementById('chat-header-name').textContent = contact.nickname;
-    document.getElementById('chat-header-status').textContent = 'Online';
+    const headerName = document.getElementById('chat-header-name');
+    const headerStatus = document.getElementById('chat-header-status');
+    if (headerName) headerName.textContent = contact.username;
+    if (headerStatus) headerStatus.textContent = 'Online';
     
-    // Load messages
     loadChatMessages(contact);
     
-    // Show chat input
-    document.getElementById('chat-input-area').style.display = 'flex';
+    const inputArea = document.getElementById('chat-input-area');
+    if (inputArea) inputArea.style.display = 'flex';
 }
 
-// ============================================
-// UI Setup
-// ============================================
 function setupUI() {
-    // Message input
     const messageInput = document.getElementById('message-input');
     const sendBtn = document.getElementById('send-message-btn');
     
     messageInput?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            sendMessageBtn?.click();
+            sendBtn?.click();
         }
     });
     
@@ -337,38 +234,29 @@ function setupUI() {
         }
     });
     
-    // Add contact button
-    const addContactBtn = document.getElementById('add-contact-btn');
-    addContactBtn?.addEventListener('click', showAddContactModal);
+    const usersSearchBtn = document.getElementById('open-users-search');
+    usersSearchBtn?.addEventListener('click', () => {
+        if (window.dbManager) {
+            window.dbManager.openSearchModal();
+        }
+    });
+    
+    setInterval(loadContacts, 5000);
 }
 
-function showAddContactModal() {
-    const nickname = prompt('Введите имя контакта:');
-    if (!nickname) return;
-    
-    const peerHash = prompt('Введите peer hash друга:');
-    if (!peerHash) return;
-    
-    addContact(nickname, peerHash);
-}
-
-// ============================================
-// Utilities
-// ============================================
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-function formatTime(date) {
-    if (!date) return '';
-    const d = new Date(date);
+function formatTime(timestamp) {
+    if (!timestamp) return '';
+    const d = new Date(timestamp * 1000);
     return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 }
 
 function showNotification(message) {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = 'notification';
     notification.textContent = message;
@@ -394,10 +282,9 @@ function showNotification(message) {
 }
 
 function showError(message) {
-    showNotification('⚠️ ' + message);
+    showNotification(message);
 }
 
-// Add CSS animations
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
@@ -411,17 +298,12 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// ============================================
-// Auto-initialize on DOM ready
-// ============================================
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initXcord);
+    document.addEventListener('DOMContentLoaded', () => {
+    });
 } else {
-    initXcord();
 }
 
-// Initialize Jarvis separately (it has its own DOMContentLoaded handler)
-// This ensures Jarvis modal works independently
 if (typeof initJarvis === 'function') {
-    initJarvis();
+    setTimeout(() => initJarvis(), 100);
 }

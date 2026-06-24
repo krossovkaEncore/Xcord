@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
@@ -18,10 +18,10 @@
     <link rel="stylesheet" href="styles/main.css?v=2">
     <link rel="stylesheet" href="styles/profile.css?v=2">
     <link rel="stylesheet" href="styles/settings.css?v=2">
+    <link rel="stylesheet" href="styles/users.css?v=1">
 </head>
 
-<!-- cd core -->
-<!-- python -m venv venv -->
+
 
 <body>
 
@@ -32,64 +32,57 @@
         <!-- 2. MIDDLE: Chat List -->
         <aside class="chat-list-sidebar">
             <div class="chat-list-header">
-                <!-- Peer Hash Display -->
-                <div class="peer-hash-section" style="padding: 12px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--glass-border);">
-                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">My Peer Hash:</div>
-                    <div style="font-family: monospace; font-size: 12px; display: flex; align-items: center; gap: 8px;">
-                        <span id="my-peer-hash" style="color: var(--accent-primary);">Loading...</span>
-                        <button id="copy-peer-hash" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px;">
-                            <i data-lucide="copy" size="12"></i>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Burger + Search Container -->
                 <div class="search-container">
                     <div class="burger-menu-btn" id="burger-btn">
                         <i data-lucide="menu"></i>
                     </div>
                     <div class="search-bar">
-                        <input type="text" placeholder="Search">
+                        <input type="text" placeholder="Поиск">
                     </div>
 
                     <!-- Dropdown Content -->
                     <div class="dropdown-menu" id="main-menu">
                         <!-- Folders / Modes moved here -->
-                        <div class="dropdown-header-custom">Folders</div>
+                        <div class="dropdown-header-custom">Разделы</div>
                         <div class="dropdown-item folder-select" data-filter="all">
                             <i data-lucide="layers"></i>
-                            <span>All Chats</span>
+                            <span>Все чаты</span>
                         </div>
                         <div class="dropdown-item folder-select" data-filter="personal">
                             <i data-lucide="user"></i>
-                            <span>Personal</span>
+                            <span>Личные</span>
                         </div>
                         <div class="dropdown-item folder-select" data-filter="groups">
                             <i data-lucide="users"></i>
-                            <span>Groups</span>
+                            <span>Группы</span>
                         </div>
                         <div class="dropdown-item folder-select" data-filter="channels">
                             <i data-lucide="tv"></i>
-                            <span>Channels</span>
+                            <span>Каналы</span>
                         </div>
 
                         <div class="dropdown-divider"></div>
 
                         <div class="dropdown-item" id="menu-open-profile">
                             <i data-lucide="user-circle"></i>
-                            <span>My Profile</span>
+                            <span>Мой профиль</span>
+                        </div>
+                        <div class="dropdown-item" id="open-users-search">
+                            <i data-lucide="user-search"></i>
+                            <span>Найти пользователей</span>
                         </div>
                         <div class="dropdown-item" id="add-contact-btn">
                             <i data-lucide="user-plus"></i>
-                            <span>Add Contact</span>
+                            <span>Добавить контакт</span>
                         </div>
                         <div class="dropdown-item">
                             <i data-lucide="users-2"></i>
-                            <span>Contacts</span>
+                            <span>Контакты</span>
                         </div>
                         <div class="dropdown-item" id="open-settings">
                             <i data-lucide="settings"></i>
-                            <span>Settings</span>
+                            <span>Настройки</span>
                         </div>
                         <div class="dropdown-item" id="theme-toggle">
                             <i data-lucide="moon"></i>
@@ -109,61 +102,11 @@
                 </div>
             </div>
 
-            <div class="chat-list-content">
-                <!-- Pinned Chats -->
-                <div class="list-section-header">
-                    <i data-lucide="pin" size="12"></i> <span>Pinned</span>
-                </div>
-                <div class="chat-item pinned">
-                    <div class="avatar-wrapper">
-                        <!-- Since we have a spritesheet/one image, we will just use it for now or use a placeholder that works. 
-                              The user wants "generated" avatars. I will use the one I copied. 
-                              Realistically, cutting sprites in CSS is complex without classes. 
-                              I'll just point to the file for now and maybe suggest splitting it later, 
-                              or just use the large image and let object-fit cover a piece of it (hacky but works for demo). 
-                              Better: Use the file as background-image or just distinct placeholders if I had them. 
-                              Let's stick to the generated file for 'Saved Messages' and a different one for others.
-                        -->
-                        <img src="assets/avatars/default_set.png" alt="Avatar" class="avatar"
-                            style="object-fit: cover; object-position: 0 0;">
-                        <div class="status-indicator online"></div>
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name-row">
-                            <span class="chat-name">Saved Messages</span>
-                            <span class="chat-time">12:30</span>
-                        </div>
-                        <div class="chat-preview">
-                            <span class="preview-text">Note to self...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Spacer / Divider -->
-                <div class="list-divider"></div>
-
-                <!-- Regular Chats -->
-                <div class="chat-item active">
-                    <div class="avatar-wrapper">
-                        <!-- Taking a different part of the generated image -->
-                        <img src="assets/avatars/default_set.png" alt="Avatar" class="avatar"
-                            style="object-fit: cover; object-position: 100% 0;">
-                        <div class="status-indicator dnd"></div>
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name-row">
-                            <span class="chat-name">Durov's Channel</span>
-                            <span class="chat-time">12:25</span>
-                        </div>
-                        <div class="chat-preview">
-                            <span class="preview-text">Telegram is updating...</span>
-                            <div class="unread-badge">2</div>
-                        </div>
-                    </div>
-                </div>
+            <div class="chat-list-content" id="dynamic-chats">
+                <!-- Чаты загружаются динамически через JS -->
             </div>
         </aside>
-
+            
         <!-- 3. RIGHT: Main Chat Area -->
         <main class="chat-main">
             <!-- Header -->
@@ -171,17 +114,14 @@
                 <div class="header-left">
                     <i data-lucide="at-sign" class="header-icon"></i>
                     <div class="header-text">
-                        <h3 id="chat-header-name">Select a chat</h3>
-                        <span class="header-status" id="chat-header-status">Offline</span>
+                        <h3 id="chat-header-name">Выберите чат</h3>
+                        <span class="header-status" id="chat-header-status">Оффлайн</span>
                     </div>
                 </div>
                 <div class="header-right">
                     <i data-lucide="phone" class="action-icon"></i>
                     <i data-lucide="video" class="action-icon"></i>
                     <i data-lucide="search" class="action-icon"></i>
-                    <button class="jarvis-btn" id="jarvis-btn" title="Jarvis AI">
-                        <i data-lucide="bot"></i>
-                    </button>
                     <i data-lucide="panel-right" class="action-icon" id="toggle-profile"></i>
                 </div>
             </header>
@@ -191,7 +131,7 @@
                 <!-- Messages will be loaded dynamically -->
                 <div style="text-align: center; padding: 40px; color: var(--text-muted);">
                     <i data-lucide="message-circle" size="48" style="opacity: 0.3;"></i>
-                    <p style="margin-top: 16px;">Select a chat to start messaging</p>
+                    <p style="margin-top: 16px;">Выберите чат для начала общения</p>
                 </div>
             </div>
 
@@ -199,13 +139,18 @@
             <div class="input-area" id="chat-input-area" style="display: none;">
                 <div class="input-wrapper">
                     <button class="input-btn"><i data-lucide="plus-circle"></i></button>
-                    <textarea id="message-input" placeholder="Message..." rows="1"></textarea>
+                    <textarea id="message-input" placeholder="Сообщение..." rows="1"></textarea>
                     <div class="input-right-actions">
                         <button class="input-btn" id="send-message-btn">
                             <i data-lucide="send"></i>
                         </button>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Debug Log (для отладки Jarvis) -->
+            <div id="jarvis-debug-log" style="position:fixed;bottom:0;left:0;right:0;height:120px;background:rgba(0,0,0,0.9);color:#0f0;font-family:monospace;font-size:11px;padding:8px;overflow-y:auto;z-index:9999;display:none;">
+                <div style="color:#fff;font-weight:bold;margin-bottom:4px;">=== Jarvis Debug Log ===</div>
             </div>
         </main>
 
@@ -271,7 +216,7 @@
             <!-- Bio Section -->
             <div class="profile-bio-section">
                 <p class="profile-bio-text" id="profile-bio">
-                    Привет! Я создатель Xcord — децентрализованного мессенджера. Увлекаюсь программированием, AI и созданием интересных проектов. 🎮💻
+                    Привет! Я создатель Xcord - децентрализованного мессенджера. Увлекаюсь программированием, AI и созданием интересных проектов.
                 </p>
                 <button class="profile-bio-expand" id="profile-bio-expand" style="display: none;">
                     Развернуть
@@ -286,7 +231,7 @@
                     <video src="" class="profile-media-content" id="profile-media-video" style="display: none;" controls></video>
                 </div>
             </div>
-
+            
             <!-- Additional Text Field -->
             <div class="profile-additional-section" id="profile-additional-section" style="display: none;">
                 <div class="profile-additional-label">Дополнительно</div>
@@ -422,7 +367,7 @@
     <div class="crop-modal" id="crop-modal">
         <div class="crop-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="margin: 0; color: var(--text-normal);">Crop & Adjust Image</h3>
+                <h3 style="margin: 0; color: var(--text-normal);">Обрезка изображения</h3>
                 <button class="crop-close-btn" id="crop-cancel"
                     style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 24px; padding: 4px;">
                     ×
@@ -435,52 +380,13 @@
             </div>
             <div class="crop-controls" style="margin-top: 16px;">
                 <label
-                    style="display: block; margin-bottom: 8px; color: var(--text-normal); font-size: 13px; text-transform: uppercase;">Zoom</label>
+                    style="display: block; margin-bottom: 8px; color: var(--text-normal); font-size: 13px; text-transform: uppercase;">Масштаб</label>
                 <input type="range" id="crop-zoom" min="100" max="300" value="100" style="width: 100%;">
                 <div style="display: flex; gap: 12px; margin-top: 20px;">
                     <button class="profile-edit-btn" id="crop-accept"
-                        style="flex: 1; position: static; background: var(--accent-primary); border-color: var(--accent-primary);">✓
-                        Use This Image</button>
+                        style="flex: 1; position: static; background: var(--accent-primary); border-color: var(--accent-primary);">
+                        Использовать изображение</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Jarvis AI Modal -->
-    <div class="jarvis-modal" id="jarvis-modal">
-        <div class="jarvis-container">
-            <div class="jarvis-header">
-                <div class="jarvis-header-info">
-                    <div class="jarvis-avatar">
-                        <i data-lucide="bot"></i>
-                    </div>
-                    <div>
-                        <div class="jarvis-title">Jarvis AI</div>
-                        <div class="jarvis-subtitle">Ваш голосовой помощник</div>
-                    </div>
-                </div>
-                <button class="jarvis-close" id="jarvis-close">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            <div class="jarvis-messages" id="jarvis-messages">
-                <div class="jarvis-message bot">
-                    Привет! Я Jarvis — ваш личный AI-ассистент. Вы можете:
-                    <br>• Отправлять текстовые команды
-                    <br>• Использовать голосовые команды (скажите "Jarvis")
-                    <br>• Попросить нарисовать картинку
-                    <br>• Выполнить команды компьютера
-                    <br><br>Чем могу помочь?
-                </div>
-            </div>
-            <div class="jarvis-input-area">
-                <button class="jarvis-voice-btn" id="jarvis-voice" title="Голосовой ввод">
-                    <i data-lucide="mic"></i>
-                </button>
-                <input type="text" id="jarvis-input" placeholder="Введите команду для Jarvis...">
-                <button class="jarvis-send-btn" id="jarvis-send">
-                    <i data-lucide="send"></i>
-                </button>
             </div>
         </div>
     </div>
@@ -615,24 +521,235 @@
                 </div>
                 <div class="settings-section" id="section-security">
                     <h3 class="settings-title">Безопасность</h3>
-                    <p style="color: var(--text-muted); padding: 20px;">Настройки безопасности будут добавлены позже...
-                    </p>
+                    
+                    <div class="settings-subsection">
+                        <h4 class="settings-subsection-title">Управление данными</h4>
+                        <p style="color: var(--text-muted); margin-bottom: 16px;">
+                            Сбросит все сохранённые чаты, контакты и историю сообщений.
+                        </p>
+                <button class="btn-danger" id="reset-database-btn" style="width: 100%; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">
+                    <i data-lucide="trash-2"></i> Сбросить все данные
+                </button>
+                    </div>
+                    
+                    <p style="color: var(--text-muted); padding: 20px;">Настройки безопасности будут добавлены позже...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Init Icons -->
-    <script src="scripts/data.js?v=4"></script>
+    <!-- Auth Modal - Login/Register -->
+    <div class="auth-modal" id="auth-modal">
+        <div class="auth-container">
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Вход</button>
+                <button class="auth-tab" data-tab="register">Регистрация</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="auth-form" id="login-form">
+                <div class="auth-header">
+                    <i data-lucide="log-in" class="auth-icon"></i>
+                    <h2>С возвращением!</h2>
+                    <p>Войдите в свой аккаунт</p>
+                </div>
+
+                <div class="auth-input-group">
+                    <label class="auth-label">
+                        <i data-lucide="user"></i>
+                        <span>Имя пользователя</span>
+                    </label>
+                    <input type="text" id="login-username" class="auth-input" placeholder="Введите имя пользователя" required autocomplete="username">
+                </div>
+
+                <div class="auth-input-group">
+                    <label class="auth-label">
+                        <i data-lucide="lock"></i>
+                        <span>Пароль</span>
+                    </label>
+                    <div class="auth-input-wrapper">
+                        <input type="password" id="login-password" class="auth-input" placeholder="Введите пароль" required autocomplete="current-password">
+                        <button type="button" class="auth-input-toggle" id="login-password-toggle">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="auth-options">
+                    <label class="auth-checkbox">
+                        <input type="checkbox" id="login-remember">
+                        <span>Запомнить меня</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-submit-btn">
+                    <i data-lucide="log-in"></i>
+                    <span>Войти</span>
+                </button>
+
+                <div class="auth-divider">
+                    <span>или войдите через</span>
+                </div>
+
+                <button type="button" class="auth-social-btn" id="google-login-btn">
+                    <img src="assets/google.png" alt="Google" class="auth-social-icon">
+                    <span>Продолжить с Google</span>
+                </button>
+
+                <div class="auth-error" id="login-error"></div>
+            </form>
+
+            <!-- Register Form -->
+            <form class="auth-form" id="register-form" style="display: none;">
+                <div class="auth-header">
+                    <i data-lucide="user-plus" class="auth-icon"></i>
+                    <h2>Создать аккаунт</h2>
+                    <p>Присоединяйтесь к Xcord</p>
+                </div>
+
+                <div class="auth-input-group">
+                    <label class="auth-label">
+                        <i data-lucide="user"></i>
+                        <span>Имя пользователя</span>
+                    </label>
+                    <input type="text" id="register-username" class="auth-input" placeholder="Придумайте имя пользователя" required autocomplete="username" minlength="3" maxlength="32">
+                    <span class="auth-hint">От 3 до 32 символов</span>
+                </div>
+
+                <div class="auth-input-group">
+                    <label class="auth-label">
+                        <i data-lucide="mail"></i>
+                        <span>Email (опционально)</span>
+                    </label>
+                    <input type="email" id="register-email" class="auth-input" placeholder="example@mail.com" autocomplete="email">
+                </div>
+
+                <div class="auth-input-group">
+                    <label class="auth-label">
+                        <i data-lucide="lock"></i>
+                        <span>Пароль</span>
+                    </label>
+                    <div class="auth-input-wrapper">
+                        <input type="password" id="register-password" class="auth-input" placeholder="Придумайте пароль" required autocomplete="new-password" minlength="6">
+                        <button type="button" class="auth-input-toggle" id="register-password-toggle">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
+                    <span class="auth-hint">Минимум 6 символов</span>
+                </div>
+
+                <div class="auth-input-group">
+                    <label class="auth-label">
+                        <i data-lucide="lock"></i>
+                        <span>Подтвердите пароль</span>
+                    </label>
+                    <div class="auth-input-wrapper">
+                        <input type="password" id="register-password-confirm" class="auth-input" placeholder="Повторите пароль" required autocomplete="new-password">
+                        <button type="button" class="auth-input-toggle" id="register-password-confirm-toggle">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="auth-options">
+                    <label class="auth-checkbox">
+                        <input type="checkbox" id="register-terms" required>
+                        <span>Я принимаю <a href="#" class="auth-link">условия использования</a></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-submit-btn">
+                    <i data-lucide="user-plus"></i>
+                    <span>Зарегистрироваться</span>
+                </button>
+
+                <div class="auth-divider">
+                    <span>или зарегистрируйтесь через</span>
+                </div>
+
+                <button type="button" class="auth-social-btn" id="google-register-btn">
+                    <img src="assets/google.png" alt="Google" class="auth-social-icon">
+                    <span>Продолжить с Google</span>
+                </button>
+
+                <div class="auth-error" id="register-error"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Username Setup Modal -->
+    <div class="auth-modal" id="username-modal" style="display: flex;">
+        <div class="auth-container" style="max-width: 400px;">
+            <div class="auth-header">
+                <i data-lucide="user-plus" class="auth-icon"></i>
+                <h2>Добро пожаловать!</h2>
+                <p>Введите ваше имя для начала общения</p>
+            </div>
+            <div class="auth-input-group">
+                <label class="auth-label">
+                    <i data-lucide="user"></i>
+                    <span>Имя пользователя</span>
+                </label>
+                <input type="text" id="username-input" class="auth-input" placeholder="Например: alice" autocomplete="username" minlength="2" maxlength="32">
+            </div>
+            <button type="button" class="auth-submit-btn" id="username-submit-btn">
+                <i data-lucide="arrow-right"></i>
+                <span>Продолжить</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Users Search Modal -->
+    <div class="users-search-modal" id="users-search-modal" style="display: none;">
+        <div class="users-search-container">
+                <div class="users-search-header">
+                    <h3><i data-lucide="user-search"></i> Поиск пользователей</h3>
+                    <button class="users-search-close" id="users-search-close">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                
+                <div class="users-search-body">
+                    <div class="search-input-wrapper">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="user-search-input" placeholder="Поиск по имени...">
+                    </div>
+                
+                <div class="search-results" id="search-results">
+                    <div class="search-placeholder">
+                        <i data-lucide="search" size="48"></i>
+                        <p>Введите имя для поиска</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="users-search-footer">
+                <button class="btn-secondary" id="export-profile-btn">
+                    <i data-lucide="download"></i> Экспорт профиля
+                </button>
+                <button class="btn-primary" id="import-profile-btn">
+                    <i data-lucide="upload"></i> Импорт профиля
+                </button>
+                <input type="file" id="import-profile-file" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/data.js?v=5"></script>
+    <script src="scripts/app.js?v=7"></script>
     <script src="scripts/profile.js?v=4"></script>
     <script src="scripts/crop-editor.js?v=4"></script>
     <script src="scripts/themes.js?v=4"></script>
     <script src="scripts/settings.js?v=4"></script>
     <script src="scripts/theme-settings.js?v=4"></script>
-    <script src="scripts/jarvis.js?v=4"></script>
-    <script src="scripts/reticulum-client.js?v=4"></script>
-    <script src="scripts/main.js?v=4"></script>
-    <script src="scripts/app.js?v=4"></script>
+    <script src="scripts/jarvis.js?v=10"></script>
+    <script src="scripts/message-store.js?v=1"></script>
+    <script src="scripts/p2p-client.js?v=2"></script>
+    <script src="scripts/webrtc-client.js?v=1"></script>
+    <script src="scripts/p2p-main.js?v=5"></script>
+    <script src="scripts/auth.js?v=1"></script>
+    <script src="scripts/database.js?v=1"></script>
 </body>
 
 </html>

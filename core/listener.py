@@ -5,7 +5,7 @@ import speech_recognition as sr
 import Jarvis
 
 WAKE_WORDS = ("jarvis", "джарвис")
-_WAKE_RE = re.compile(r"\b(jarvis|джарвис)\b[\s,.:;!?—-]*(.*)$", re.IGNORECASE)
+_WAKE_RE = re.compile(r"\b(jarvis|джарвис)\b[\s,.:;!?-]*(.*)$", re.IGNORECASE)
 
 
 def _normalize(text):
@@ -27,7 +27,7 @@ def _extract_after_wake_word(text):
 def listen_and_dispatch():
     """
     Слушает микрофон.
-    Если услышит 'jarvis/джарвис' — ждёт окончание фразы и отправляет в Jarvis.
+    Если услышит 'jarvis/джарвис' - ждёт окончание фразы и отправляет в Jarvis.
     """
     try:
         pygame.mixer.init()

@@ -8,6 +8,10 @@ __pycache__/
 venv/
 env/
 
+# Node.js / Electron
+node_modules/
+*.asar
+
 # OS / editor
 .DS_Store
 Thumbs.db
@@ -25,4 +29,11 @@ dist/
 
 # Executables (often produced by PyInstaller)
 *.exe
+
+# Electron build outputs
+out/
+*.dmg
+*.AppImage
+*.deb
+*.rpm
 

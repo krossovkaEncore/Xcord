@@ -2,79 +2,47 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import queue
+import socket
+import threading
 import time
 import uuid
 from dataclasses import asdict, dataclass
 from typing import Generator, Optional
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import os
+from pydantic import BaseModel
 
-# Try to import Jarvis (optional)
+# Проверка импортов
+import socket
+import threading
+
+try:
+    import bcrypt
+    BCRYPT_AVAILABLE = True
+except ImportError:
+    BCRYPT_AVAILABLE = False
+    print("[WARNING] bcrypt not installed. Install with: pip install bcrypt")
+
 try:
     import Jarvis
     JARVIS_AVAILABLE = True
-    print("[Jarvis] Module loaded successfully")
 except ImportError as e:
     JARVIS_AVAILABLE = False
-    print(f"[Jarvis] Not available: {e}")
-
-# Reticulum/LXMF Backend (optional - for decentralized messaging)
-try:
-    from reticulum_backend import get_reticulum, init_reticulum, XcordReticulum
-    RETICULUM_AVAILABLE = True
-except ImportError:
-    RETICULUM_AVAILABLE = False
-    XcordReticulum = None
-
 
 app = FastAPI(title="Xcord Core", version="0.1.0")
 
-# Global Reticulum instance
-reticulum: Optional[XcordReticulum] = None
+# Определяем корень проекта правильно
+current_file = os.path.abspath(__file__)
+current_dir = os.path.dirname(current_file)
+# Поднимаемся на уровень выше от core/ к корню проекта
+project_root = os.path.dirname(current_dir)
 
-
-@app.get("/favicon.ico")
-def favicon():
-    """Игнорируем favicon"""
-    return ""
-
-
-@app.get("/")
-def root():
-    """Корневая страница - отдаём HTML интерфейс"""
-    # Путь к index.html относительно файла app.py
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    index_path = os.path.join(project_root, "index.html")
-    
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    
-    return {
-        "name": "Xcord Core Server",
-        "version": "0.1.0",
-        "status": "running",
-        "endpoints": {
-            "health": "/health",
-            "messages_send": "/messages/send",
-            "events": "/events",
-            "jarvis_command": "/jarvis/command",
-            "jarvis_status": "/jarvis/status",
-            "docs": "/docs"
-        }
-    }
-
-
-# Подключаем статические файлы
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Подключаем все папки
+# Монтируем статические файлы
 for folder in ["assets", "styles", "scripts"]:
     folder_path = os.path.join(project_root, folder)
     if os.path.exists(folder_path):
@@ -91,203 +59,381 @@ app.add_middleware(
 )
 
 
-@dataclass(frozen=True)
-class Message:
-    id: str
-    chat_id: str
-    sender_id: str
-    text: str
-    ts_ms: int
+# === Auth Models ===
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    display_name: Optional[str] = None
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
-class SendMessageIn(BaseModel):
-    chat_id: str
-    sender_id: str = "local"
-    text: str
+class AuthResponse(BaseModel):
+    ok: bool
+    user_id: Optional[str] = None
+    username: Optional[str] = None
+    error: Optional[str] = None
 
+# === UDP Discovery ===
+DISCOVERY_PORT = 8765
+DISCOVERY_BROADCAST = "<broadcast>"
+discovery_socket = None
+local_discovery_port = None
 
-event_queue: "queue.Queue[dict]" = queue.Queue()
+def start_udp_discovery(server_port: int):
+    """UDP Discovery service для обнаружения пиров в LAN"""
+    global discovery_socket, local_discovery_port
+    
+    try:
+        discovery_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        discovery_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        discovery_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        discovery_socket.bind(('', DISCOVERY_PORT))
+        discovery_socket.settimeout(1.0)
+        local_discovery_port = DISCOVERY_PORT
+        
+        print(f"[Discovery] UDP listener started on port {DISCOVERY_PORT}")
+        
+        def listen_loop():
+            while True:
+                try:
+                    data, addr = discovery_socket.recvfrom(1024)
+                    message = json.loads(data.decode('utf-8'))
+                    handle_discovery_message(message, addr, server_port)
+                except socket.timeout:
+                    continue
+                except Exception as e:
+                    print(f"[Discovery] Error: {e}")
+                    break
+        
+        thread = threading.Thread(target=listen_loop, daemon=True)
+        thread.start()
+        
+        # Отправляем приветственный пакет
+        broadcast_discovery(server_port, "hello")
+        
+    except Exception as e:
+        print(f"[Discovery] Failed to start: {e}")
 
-
-def now_ms() -> int:
-    return int(time.time() * 1000)
-
-
-def push_event(event_type: str, payload: dict) -> None:
-    event_queue.put(
-        {
-            "id": str(uuid.uuid4()),
-            "type": event_type,
-            "ts_ms": now_ms(),
-            "payload": payload,
+def broadcast_discovery(server_port: int, msg_type: str = "announce"):
+    """Отправить broadcast пакет в LAN"""
+    if not discovery_socket:
+        return
+    
+    try:
+        message = {
+            "type": msg_type,
+            "service": "xcord",
+            "port": server_port,
+            "timestamp": time.time()
         }
-    )
+        discovery_socket.sendto(
+            json.dumps(message).encode('utf-8'),
+            (DISCOVERY_BROADCAST, DISCOVERY_PORT)
+        )
+        print(f"[Discovery] Broadcast {msg_type} on port {server_port}")
+    except Exception as e:
+        print(f"[Discovery] Broadcast error: {e}")
+
+def handle_discovery_message(message: dict, addr: tuple, server_port: int):
+    """Обработка полученного discovery пакета"""
+    if message.get("service") != "xcord":
+        return
+    
+    print(f"[Discovery] Found peer at {addr[0]}:{message.get('port')}")
+    
+    # Можно добавить хранение обнаруженных пиров
+    # connected_peers.append({"ip": addr[0], "port": message.get('port'), ...})
+
+
+connected_clients: dict = {}
+
+message_queue: "queue.Queue[dict]" = queue.Queue()
+
+# Auth storage (в будущем перенести в БД)
+registered_users: dict = {}
+
+
+def find_free_port(start_port: int = 8000, max_attempts: int = 100) -> int:
+    """Найти первый свободный порт начиная с start_port"""
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('0.0.0.0', port))
+                print(f"[Port] Found free port: {port}")
+                return port
+        except OSError:
+            continue
+    
+    raise RuntimeError(f"No free ports found in range {start_port}-{start_port + max_attempts}")
+
+
+async def broadcast_to_others(exclude_client_id: str, message: dict):
+    """Отправить сообщение всем кроме указанного клиента"""
+    # Копируем список ключей чтобы избежать изменения словаря во время итерации
+    for cid in list(connected_clients.keys()):
+        if cid != exclude_client_id:
+            try:
+                await connected_clients[cid]["ws"].send_json(message)
+            except Exception:
+                pass
+
+
+@app.get("/favicon.ico")
+def favicon():
+    return ""
+
+
+@app.get("/")
+def root():
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    index_path = os.path.join(project_root, "index.html")
+    
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    
+    return {
+        "name": "Xcord Core Server",
+        "version": "0.1.0",
+        "status": "running",
+        "endpoints": {
+            "health": "/health",
+            "websocket": "/ws/{username}",
+            "messages": "/messages",
+            "peers": "/peers",
+            "jarvis_command": "/jarvis/command",
+            "jarvis_status": "/jarvis/status",
+            "docs": "/docs"
+        }
+    }
+
+
+@app.websocket("/ws/{username}")
+async def websocket_endpoint(ws: WebSocket, username: str):
+    client_id = str(uuid.uuid4())[:8]
+    connected_clients[client_id] = {
+        "ws": ws,
+        "username": username,
+        "messages": [],
+        "client_id": client_id
+    }
+    
+    await ws.accept()
+    
+    # Отправляем клиенту его ID
+    await ws.send_json({
+        "type": "connected",
+        "client_id": client_id,
+        "username": username
+    })
+    
+    # Отправляем список текущих пиров
+    peer_list = [
+        {"id": cid, "username": data["username"]}
+        for cid, data in connected_clients.items()
+        if cid != client_id
+    ]
+    await ws.send_json({
+        "type": "peer_list",
+        "peers": peer_list
+    })
+    
+    # Уведомляем остальных о новом пользователе
+    await broadcast_to_others(client_id, {
+        "type": "peer_joined",
+        "peer": {"id": client_id, "username": username}
+    })
+    
+    try:
+        while True:
+            data = await ws.receive_text()
+            msg_data = json.loads(data)
+            
+            # P2P Signaling
+            if msg_data.get("type") in ["offer", "answer", "ice_candidate"]:
+                target_id = msg_data.get("to")
+                if target_id and target_id in connected_clients:
+                    await connected_clients[target_id]["ws"].send_json({
+                        "type": msg_data["type"],
+                        "from": client_id,
+                        **msg_data
+                    })
+            
+            # P2P сообщения через сервер (если WebRTC не работает)
+            elif msg_data.get("type") == "message":
+                target_id = msg_data.get("to")
+                message_data = msg_data.get("data", {})
+                print(f"[WS] ====== Message from {client_id} ({username}) to '{target_id}' ======")
+                print(f"[WS] Message data: {message_data}")
+                
+                msg = {
+                    "id": str(uuid.uuid4()),
+                    "from": client_id,
+                    "username": username,
+                    "data": message_data,
+                    "timestamp": time.time()
+                }
+                
+                # Ищем получателя по client_id или по username
+                target_client = None
+                if target_id:
+                    # Сначала пробуем найти по client_id
+                    if target_id in connected_clients:
+                        target_client = connected_clients[target_id]
+                        print(f"[WS] Found target by client_id: {target_id}")
+                    else:
+                        # Если не нашли, ищем по username (для обратной совместимости)
+                        for cid, cdata in connected_clients.items():
+                            if cdata["username"] == target_id:
+                                target_client = cdata
+                                print(f"[WS] Found target by username: {target_id} -> {cid}")
+                                break
+                
+                if target_client:
+                    print(f"[WS] >>>>> Forwarding to {target_client['client_id']} ({target_client['username']})")
+                    await target_client["ws"].send_json({
+                        "type": "message",
+                        "from": client_id,
+                        "data": msg
+                    })
+                else:
+                    print(f"[WS] >>>>> Target '{target_id}' not found in connected clients: {list(connected_clients.keys())}")
+                    print(f"[WS] Broadcasting to all except {client_id}")
+                    # Broadcast всем кроме отправителя
+                    await broadcast_to_others(client_id, {
+                        "type": "message",
+                        "from": client_id,
+                        "data": msg
+                    })
+            
+            elif msg_data.get("type") == "ping":
+                await ws.send_json({"type": "pong"})
+    
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        connected_clients.pop(client_id, None)
+        # Уведомляем об отключении (копируем ключи для безопасной итерации)
+        for cid in list(connected_clients.keys()):
+            try:
+                await connected_clients[cid]["ws"].send_json({
+                    "type": "peer_left",
+                    "peerId": client_id
+                })
+            except Exception:
+                pass
+
+
+async def broadcast_message(msg: dict):
+    """Broadcast message to all connected clients"""
+    for cid in list(connected_clients.keys()):
+        try:
+            await connected_clients[cid]["ws"].send_json({
+                "type": "message",
+                "from": msg.get("from", "unknown"),
+                "data": msg
+            })
+        except Exception as e:
+            print(f"[WS] Broadcast error to {cid}: {e}")
+
+
+@app.get("/messages")
+async def get_messages(username: str = None):
+    messages = []
+    for client_id, data in connected_clients.items():
+        messages.extend(data["messages"])
+    
+    if username:
+        messages = [m for m in messages if m.get("sender") == username]
+    
+    return {"messages": messages[-100:]}
+
+
+@app.get("/peers")
+async def get_peers():
+    peers = [
+        {"client_id": cid, "username": data["username"]}
+        for cid, data in connected_clients.items()
+    ]
+    return {"peers": peers}
 
 
 @app.get("/health")
 def health() -> dict:
-    reticulum_status = "not_initialized"
-    if RETICULUM_AVAILABLE and reticulum:
-        reticulum_status = "running" if reticulum.is_running else "stopped"
-    elif RETICULUM_AVAILABLE:
-        reticulum_status = "available"
-    
     return {
         "ok": True,
-        "reticulum": reticulum_status,
-        "jarvis": "available" if JARVIS_AVAILABLE else "not_installed"
+        "jarvis": "available" if JARVIS_AVAILABLE else "not_installed",
+        "bcrypt": "available" if BCRYPT_AVAILABLE else "not_installed"
     }
 
 
-@app.post("/messages/send")
-def send_message(body: SendMessageIn) -> dict:
-    msg = Message(
-        id=str(uuid.uuid4()),
-        chat_id=body.chat_id,
-        sender_id=body.sender_id,
-        text=body.text,
-        ts_ms=now_ms(),
-    )
-    push_event("message", asdict(msg))
-    return {"ok": True, "message": asdict(msg)}
+# === Authentication Endpoints ===
+@app.post("/auth/register", response_model=AuthResponse)
+def register(body: RegisterRequest):
+    """Регистрация нового пользователя"""
+    if not BCRYPT_AVAILABLE:
+        return AuthResponse(ok=False, error="bcrypt not installed")
+    
+    username = body.username.strip()
+    if len(username) < 3 or len(username) > 32:
+        return AuthResponse(ok=False, error="Username must be 3-32 characters")
+    
+    if not body.password or len(body.password) < 6:
+        return AuthResponse(ok=False, error="Password must be at least 6 characters")
+    
+    # Проверяем существование
+    if username.lower() in registered_users:
+        return AuthResponse(ok=False, error="Username already exists")
+    
+    # Хешируем пароль
+    password_hash = bcrypt.hashpw(body.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    user_id = str(uuid.uuid4())[:12]
+    registered_users[username.lower()] = {
+        "id": user_id,
+        "username": username,
+        "display_name": body.display_name or username,
+        "password_hash": password_hash,
+        "created_at": time.time()
+    }
+    
+    print(f"[Auth] New user registered: {username} ({user_id})")
+    
+    return AuthResponse(ok=True, user_id=user_id, username=username)
 
 
-@app.get("/events")
-def events(since_ms: Optional[int] = None) -> StreamingResponse:
-    def gen() -> Generator[bytes, None, None]:
-        if since_ms is not None:
-            push_event("info", {"note": "since_ms is not implemented yet"})
+@app.post("/auth/login", response_model=AuthResponse)
+def login(body: LoginRequest):
+    """Вход пользователя"""
+    if not BCRYPT_AVAILABLE:
+        return AuthResponse(ok=False, error="bcrypt not installed")
+    
+    username = body.username.strip().lower()
+    user = registered_users.get(username)
+    
+    if not user:
+        return AuthResponse(ok=False, error="User not found")
+    
+    # Проверяем пароль
+    if not bcrypt.checkpw(body.password.encode('utf-8'), user["password_hash"].encode('utf-8')):
+        return AuthResponse(ok=False, error="Invalid password")
+    
+    print(f"[Auth] User logged in: {username}")
+    
+    return AuthResponse(ok=True, user_id=user["id"], username=user["username"])
 
-        while True:
-            event = event_queue.get()
-            yield b"event: " + event["type"].encode("utf-8") + b"\n"
-            yield b"data: " + json.dumps(event, ensure_ascii=False).encode("utf-8") + b"\n\n"
 
-    return StreamingResponse(gen(), media_type="text/event-stream")
-
-
-# === Reticulum/LXMF Endpoints ===
-if RETICULUM_AVAILABLE:
-    class ReticulumInitRequest(BaseModel):
-        storage_path: str = "./xcord_data"
+@app.get("/auth/verify/{user_id}")
+def verify_user(user_id: str):
+    """Проверка существования пользователя"""
+    for user in registered_users.values():
+        if user["id"] == user_id:
+            return {"ok": True, "username": user["username"]}
     
-    class AddPeerRequest(BaseModel):
-        nickname: str
-        peer_hash: str
-    
-    class SendMessageReticulumRequest(BaseModel):
-        peer_nickname: str
-        message: str
-        subject: Optional[str] = ""
-    
-    @app.post("/reticulum/init")
-    async def init_reticulum_system(request: ReticulumInitRequest):
-        """Инициализация Reticulum сети"""
-        global reticulum
-        
-        if reticulum and reticulum.is_running:
-            return {
-                "status": "already_running", 
-                "peer_hash": reticulum.get_peer_hash_hex()
-            }
-        
-        try:
-            reticulum = init_reticulum(request.storage_path)
-            
-            def on_message(msg):
-                push_event("reticulum_message", msg)
-            
-            reticulum.on_message_received = on_message
-            
-            return {
-                "status": "started",
-                "peer_hash": reticulum.get_peer_hash_hex()
-            }
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to initialize: {str(e)}")
-    
-    @app.get("/reticulum/status")
-    async def get_reticulum_status():
-        """Получение статуса Reticulum"""
-        if not reticulum or not reticulum.is_running:
-            raise HTTPException(status_code=500, detail="Reticulum not running")
-        
-        return reticulum.get_status()
-    
-    @app.post("/reticulum/peer/add")
-    async def add_peer(request: AddPeerRequest):
-        """Добавление друга"""
-        if not reticulum or not reticulum.is_running:
-            raise HTTPException(status_code=500, detail="Reticulum not running")
-        
-        success = reticulum.add_peer(request.nickname, request.peer_hash)
-        
-        if not success:
-            raise HTTPException(status_code=400, detail="Failed to add peer")
-        
-        return {"status": "ok", "nickname": request.nickname}
-    
-    @app.post("/reticulum/message/send")
-    async def send_reticulum_message(request: SendMessageReticulumRequest):
-        """Отправка сообщения через Reticulum/LXMF"""
-        if not reticulum or not reticulum.is_running:
-            raise HTTPException(status_code=500, detail="Reticulum not running")
-        
-        success = reticulum.send_message(
-            peer_nickname=request.peer_nickname,
-            message_text=request.message,
-            subject=request.subject
-        )
-        
-        if not success:
-            raise HTTPException(status_code=400, detail="Failed to send message")
-        
-        return {"status": "ok"}
-    
-    @app.get("/reticulum/messages")
-    async def get_reticulum_messages(peer_nickname: Optional[str] = None):
-        """Получение сообщений"""
-        if not reticulum or not reticulum.is_running:
-            raise HTTPException(status_code=500, detail="Reticulum not running")
-        
-        messages = reticulum.get_messages(peer_nickname)
-        return {"messages": messages}
-    
-    @app.get("/reticulum/messages/stream")
-    async def stream_reticulum_messages():
-        """SSE поток новых сообщений Reticulum"""
-        async def event_generator():
-            last_count = 0
-            
-            while True:
-                if reticulum:
-                    current_count = len(reticulum.received_messages)
-                    if current_count > last_count:
-                        messages = reticulum.get_messages()
-                        yield f"data: {json.dumps({'new_messages': messages[last_count:]})}\n\n"
-                        last_count = current_count
-                
-                await asyncio.sleep(1)
-        
-        return StreamingResponse(
-            event_generator(),
-            media_type="text/event-stream",
-            headers={
-                "Cache-Control": "no-cache",
-                "Connection": "keep-alive"
-            }
-        )
-    
-    @app.post("/reticulum/shutdown")
-    async def shutdown_reticulum():
-        """Корректное завершение работы Reticulum"""
-        global reticulum
-        
-        if reticulum:
-            reticulum.stop()
-            reticulum = None
-        
-        return {"status": "shutdown_complete"}
+    return {"ok": False, "error": "User not found"}
 
 
 # === Jarvis Integration ===
@@ -297,7 +443,6 @@ class JarvisCommandIn(BaseModel):
 
 @app.post("/jarvis/command")
 def jarvis_command(body: JarvisCommandIn) -> dict:
-    """Отправить команду Jarvis и получить ответ"""
     if not JARVIS_AVAILABLE:
         return {
             "ok": False, 
@@ -305,8 +450,6 @@ def jarvis_command(body: JarvisCommandIn) -> dict:
         }
     
     try:
-        # Запускаем команду в отдельном потоке, чтобы не блокировать API
-        import threading
         result_container = {}
         
         def run_jarvis():
@@ -314,22 +457,26 @@ def jarvis_command(body: JarvisCommandIn) -> dict:
                 result_container["response"] = Jarvis.jarvis(body.command)
             except Exception as e:
                 result_container["error"] = str(e)
+                print(f"[Jarvis] Error: {e}")
         
         thread = threading.Thread(target=run_jarvis)
         thread.start()
-        thread.join(timeout=60) # Ждём максимум 60 секунд
+        thread.join(timeout=60)
+        
+        if thread.is_alive():
+            return {"ok": False, "error": "Таймаут: Jarvis не ответил за 60 секунд"}
         
         if "error" in result_container:
             return {"ok": False, "error": result_container["error"]}
         
         return {"ok": True, "response": result_container.get("response", "Команда выполнена")}
     except Exception as e:
+        print(f"[Jarvis] Exception: {e}")
         return {"ok": False, "error": str(e)}
 
 
 @app.get("/jarvis/status")
 def jarvis_status() -> dict:
-    """Проверить статус Jarvis"""
     return {
         "ok": True,
         "status": "ready" if JARVIS_AVAILABLE else "not_installed",
@@ -340,7 +487,6 @@ def jarvis_status() -> dict:
 
 @app.post("/jarvis/tts")
 def jarvis_tts(body: dict) -> dict:
-    """Генерация аудио из текста (TTS) через gTTS"""
     text = body.get("text", "")
     
     if not text or not text.strip():
@@ -356,7 +502,6 @@ def jarvis_tts(body: dict) -> dict:
         import uuid
         import os
         
-        # Генерация аудио
         tts_filename = f"tts_{uuid.uuid4().hex}.mp3"
         tts_path = os.path.join(os.path.dirname(__file__), tts_filename)
         
@@ -376,8 +521,6 @@ def jarvis_tts(body: dict) -> dict:
 
 @app.get("/jarvis/audio/{filename}")
 def serve_jarvis_audio(filename: str):
-    """Отдача аудиофайла TTS"""
-    import os
     audio_path = os.path.join(os.path.dirname(__file__), filename)
     
     if not os.path.exists(audio_path):
@@ -386,38 +529,45 @@ def serve_jarvis_audio(filename: str):
     return FileResponse(audio_path, media_type="audio/mpeg")
 
 
-# Запуск сервера при прямом запуске
 if __name__ == "__main__":
     import uvicorn
     
+    # Находим свободный порт
     print("=" * 50)
-    print("🚀 Запуск Xcord Core Server...")
+    print("Xcord Core Server - Starting...")
     print("=" * 50)
+    
+    try:
+        port = find_free_port(8000, 100)
+    except RuntimeError as e:
+        print(f"[ERROR] {e}")
+        input("Press Enter to exit...")
+        exit(1)
+    
+    # Запускаем UDP discovery
+    start_udp_discovery(port)
+    
     print()
     print("Доступные endpoints:")
-    print("  • GET  /health          - Проверка здоровья")
-    print("  • POST /messages/send   - Отправка сообщения (local)")
-    print("  • GET  /events          - SSE события")
-    print("  • POST /jarvis/command  - Команда для Jarvis")
-    print("  • GET  /jarvis/status   - Статус Jarvis")
+    print("  • GET  /                  - Главная страница")
+    print("  • GET  /health            - Проверка здоровья")
+    print("  • WS   /ws/{username}     - WebSocket P2P signaling")
+    print("  • GET  /messages          - История сообщений")
+    print("  • GET  /peers             - Подключённые клиенты")
+    print("  • POST /auth/register     - Регистрация")
+    print("  • POST /auth/login        - Вход")
+    print("  • GET  /auth/verify/{id}  - Проверка пользователя")
+    print("  • POST /jarvis/command    - Команда для Jarvis")
+    print("  • GET  /jarvis/status     - Статус Jarvis")
+    print("  • POST /jarvis/tts        - Генерация аудио")
+    print("  • GET  /jarvis/audio/{f}  - Аудиофайл")
+    print("  • GET  /docs              - API документация")
     print()
-    if RETICULUM_AVAILABLE:
-        print("  🔗 Reticulum/LXMF (децентрализованная сеть):")
-        print("  • POST /reticulum/init     - Инициализация сети")
-        print("  • GET  /reticulum/status   - Статус сети")
-        print("  • POST /reticulum/peer/add - Добавить друга")
-        print("  • POST /reticulum/message/send - Отправить сообщение")
-        print("  • GET  /reticulum/messages - Получить сообщения")
-        print("  • GET  /reticulum/messages/stream - SSE поток")
-        print()
-    else:
-        print("  ⚠️  Reticulum не установлен: pip install reticulum lxmf")
-        print()
-    print("Откройте http://localhost:8000 в браузере")
-    print("API docs: http://localhost:8000/docs")
+    print(f"Server running on http://localhost:{port}")
+    print(f"UDP Discovery on port {DISCOVERY_PORT}")
+    print("API docs: http://localhost:{port}/docs")
     print()
     print("Для остановки нажмите Ctrl+C")
     print("=" * 50)
     
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
+    uvicorn.run(app, host="0.0.0.0", port=port)

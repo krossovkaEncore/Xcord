@@ -1,4 +1,3 @@
-// Image Crop Editor State
 let cropState = {
     image: null,
     canvas: null,
@@ -14,6 +13,11 @@ let cropState = {
     originalHeight: 0
 };
 
+document.addEventListener('DOMContentLoaded', () => {
+    initImageCropEditor();
+    initFileUploads();
+});
+
 function initImageCropEditor() {
     const canvas = document.getElementById('crop-canvas');
     const ctx = canvas.getContext('2d');
@@ -24,13 +28,11 @@ function initImageCropEditor() {
     cropState.canvas = canvas;
     cropState.ctx = ctx;
 
-    // Zoom control
     zoomSlider?.addEventListener('input', () => {
         cropState.scale = zoomSlider.value / 100;
         drawCroppedImage();
     });
 
-    // Mouse drag controls
     canvas?.addEventListener('mousedown', (e) => {
         cropState.isDragging = true;
         cropState.lastX = e.offsetX;
@@ -60,7 +62,6 @@ function initImageCropEditor() {
         cropState.isDragging = false;
     });
 
-    // Accept cropped image
     acceptBtn?.addEventListener('click', () => {
         const croppedDataURL = canvas.toDataURL('image/png');
 
@@ -70,14 +71,12 @@ function initImageCropEditor() {
             PROFILE_DATA.avatar = croppedDataURL;
         }
 
-        // Update display and save immediately
         updateProfileDisplay();
         saveProfileData();
 
         closeCropModal();
     });
 
-    // Cancel
     cancelBtn?.addEventListener('click', closeCropModal);
 }
 
@@ -93,11 +92,10 @@ function openCropModal(imageFile, targetType) {
             cropState.image = img;
             cropState.originalWidth = img.width;
             cropState.originalHeight = img.height;
-            cropState.scale = 0.8; // Start at 80% zoom
+            cropState.scale = 0.8;
             cropState.offsetX = 0;
             cropState.offsetY = 0;
 
-            // Set canvas size based on target
             if (targetType === 'background') {
                 cropState.canvas.width = 800;
                 cropState.canvas.height = 300;
@@ -108,7 +106,7 @@ function openCropModal(imageFile, targetType) {
 
             drawCroppedImage();
             modal.classList.add('active');
-            document.getElementById('crop-zoom').value = 80; // Set slider to 80%
+            document.getElementById('crop-zoom').value = 80;
         };
         img.src = e.target.result;
     };
@@ -129,18 +127,14 @@ function drawCroppedImage() {
     const ctx = cropState.ctx;
     const img = cropState.image;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Calculate scaled dimensions
     const scaledWidth = img.width * cropState.scale;
     const scaledHeight = img.height * cropState.scale;
 
-    // Center image initially
     const x = (canvas.width - scaledWidth) / 2 + cropState.offsetX;
     const y = (canvas.height - scaledHeight) / 2 + cropState.offsetY;
 
-    // Draw image
     ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
 }
 
@@ -153,7 +147,7 @@ function initFileUploads() {
         if (file) {
             openCropModal(file, 'background');
         }
-        e.target.value = ''; // Reset input
+        e.target.value = '';
     });
 
     avatarFileInput?.addEventListener('change', (e) => {
@@ -161,6 +155,6 @@ function initFileUploads() {
         if (file) {
             openCropModal(file, 'avatar');
         }
-        e.target.value = ''; // Reset input
+        e.target.value = '';
     });
 }

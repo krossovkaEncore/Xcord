@@ -1,5 +1,6 @@
-// Theme System for Xcord
-// Allows users to create up to 5 custom themes + 2 built-in themes
+document.addEventListener('DOMContentLoaded', () => {
+    loadThemes();
+});
 
 const DEFAULT_THEMES = {
     darkRed: {
@@ -42,11 +43,10 @@ const DEFAULT_THEMES = {
 
 let THEME_SLOTS = {
     builtin: DEFAULT_THEMES,
-    custom: [null, null, null, null, null], // 5 custom slots
+    custom: [null, null, null, null, null],
     activeTheme: 'builtin.darkRed'
 };
 
-// Load themes from localStorage
 function loadThemes() {
     const saved = localStorage.getItem('xcord_themes');
     if (saved) {
@@ -57,16 +57,13 @@ function loadThemes() {
             console.error('Failed to load themes:', e);
         }
     }
-    // Apply the active theme
     applyTheme(THEME_SLOTS.activeTheme);
 }
 
-// Save themes to localStorage
 function saveThemes() {
     localStorage.setItem('xcord_themes', JSON.stringify(THEME_SLOTS));
 }
 
-// Get theme by ID (e.g., 'builtin.darkRed' or 'custom.0')
 function getTheme(themeId) {
     const [type, index] = themeId.split('.');
     if (type === 'builtin') {
@@ -77,7 +74,6 @@ function getTheme(themeId) {
     return null;
 }
 
-// Apply theme to entire interface
 function applyTheme(themeId) {
     const theme = getTheme(themeId);
     if (!theme) {
@@ -88,15 +84,12 @@ function applyTheme(themeId) {
     THEME_SLOTS.activeTheme = themeId;
     saveThemes();
 
-    // Apply all CSS variables
     const root = document.documentElement;
     Object.keys(theme.colors).forEach(key => {
-        // Convert camelCase to kebab-case
         const cssVar = '--' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
         root.style.setProperty(cssVar, theme.colors[key]);
     });
 
-    // Apply wallpaper
     requestAnimationFrame(() => {
         const chatMain = document.querySelector('.chat-main');
         if (!chatMain) return;
@@ -135,11 +128,9 @@ function applyTheme(themeId) {
         }
     });
 
-    // Update UI to reflect active theme
     updateThemeSelectorUI();
 }
 
-// Create new custom theme
 function createCustomTheme(name = 'Custom Theme') {
     const emptySlot = THEME_SLOTS.custom.findIndex(slot => slot === null);
     if (emptySlot === -1) {
@@ -159,7 +150,6 @@ function createCustomTheme(name = 'Custom Theme') {
     return `custom.${emptySlot}`;
 }
 
-// Update custom theme
 function updateCustomTheme(slotIndex, updates) {
     if (slotIndex < 0 || slotIndex >= 5) return;
     if (!THEME_SLOTS.custom[slotIndex]) return;
@@ -170,17 +160,14 @@ function updateCustomTheme(slotIndex, updates) {
     };
     saveThemes();
 
-    // If this is the active theme, reapply
     if (THEME_SLOTS.activeTheme === `custom.${slotIndex}`) {
         applyTheme(THEME_SLOTS.activeTheme);
     }
 }
 
-// Delete custom theme
 function deleteCustomTheme(slotIndex) {
     if (slotIndex < 0 || slotIndex >= 5) return;
 
-    // If deleting active theme, switch to default
     if (THEME_SLOTS.activeTheme === `custom.${slotIndex}`) {
         applyTheme('builtin.darkRed');
     }
@@ -190,21 +177,17 @@ function deleteCustomTheme(slotIndex) {
     updateThemeSelectorUI();
 }
 
-// Update theme selector UI
 function updateThemeSelectorUI() {
-    // Update radio buttons
     document.querySelectorAll('input[name="theme-select"]').forEach(radio => {
         radio.checked = (radio.value === THEME_SLOTS.activeTheme);
     });
 
-    // Show/hide theme editor
     const isCustom = THEME_SLOTS.activeTheme.startsWith('custom.');
     const editor = document.getElementById('theme-editor');
     if (editor) {
         editor.style.display = isCustom ? 'block' : 'none';
     }
 
-    // Update editor fields if custom theme is active
     if (isCustom) {
         const slotIndex = parseInt(THEME_SLOTS.activeTheme.split('.')[1]);
         const theme = THEME_SLOTS.custom[slotIndex];
@@ -214,7 +197,6 @@ function updateThemeSelectorUI() {
     }
 }
 
-// Load theme into editor
 function loadThemeToEditor(theme, slotIndex) {
     const themeNameEl = document.getElementById('theme-name');
     if (themeNameEl) themeNameEl.setAttribute('value', theme.name);
@@ -222,7 +204,6 @@ function loadThemeToEditor(theme, slotIndex) {
     const themeSlotIndexEl = document.getElementById('theme-slot-index');
     if (themeSlotIndexEl) themeSlotIndexEl.setAttribute('value', slotIndex);
 
-    // Load colors
     Object.keys(theme.colors).forEach(key => {
         const input = document.getElementById(`theme-${key}`);
         if (input) input.value = theme.colors[key];

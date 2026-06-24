@@ -1,27 +1,26 @@
-// сиситема настроек вообще то
 const SETTINGS_DATA = {
-    // цвета типо
     primaryColor: '#6366f1',
     secondaryColor: '#8b5cf6',
     messageColor: '#6366f1',
     
-    // обои для чата
     chatWallpaper: '',
     wallpaperBlur: 0,
     
-    // эффект стеклышка
     glassOpacity: 70,
     glassBlur: 30,
     
-    // интерфейс
     interfaceScale: 100,
     enableAnimations: true,
     enableHoverEffects: true,
     enableGlowEffects: true,
     
-    // тема светлая или темная
     themeMode: 'dark'
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadSettings();
+    initSettingsModal();
+});
 
 function loadSettings() {
     const saved = localStorage.getItem('xcord_settings');
@@ -36,25 +35,19 @@ function saveSettings() {
 }
 
 function applySettings() {
-    // цвета
     document.documentElement.style.setProperty('--accent-primary', SETTINGS_DATA.primaryColor);
     document.documentElement.style.setProperty('--accent-secondary', SETTINGS_DATA.secondaryColor);
     document.documentElement.style.setProperty('--message-color', SETTINGS_DATA.messageColor);
     
-    // тема
     applyThemeMode(SETTINGS_DATA.themeMode);
     
-    // обои
     applyWallpaper();
     
-    // стекло 
     applyGlassEffects();
     
-    // масштаб интерфейса
     document.body.style.transform = `scale(${SETTINGS_DATA.interfaceScale / 100})`;
     document.body.style.transformOrigin = 'top left';
     
-    // анимки включаем
     document.body.style.setProperty('--enable-animations', SETTINGS_DATA.enableAnimations ? '1' : '0');
     document.body.style.setProperty('--enable-hover', SETTINGS_DATA.enableHoverEffects ? '1' : '0');
     document.body.style.setProperty('--enable-glow', SETTINGS_DATA.enableGlowEffects ? '1' : '0');
@@ -63,22 +56,17 @@ function applySettings() {
 function applyThemeMode(mode) {
     const body = document.body;
     if (mode === 'light') {
-        // светлая тема включаем
         body.classList.add('theme-light');
         body.classList.remove('theme-dark');
     } else {
-        // темная тема
         body.classList.add('theme-dark');
         body.classList.remove('theme-light');
     }
 }
 
 function applyWallpaper() {
-    const messagesContainer = document.querySelector('.messages-container');
-    if (!messagesContainer) return;
-    
+    const body = document.body;
     if (SETTINGS_DATA.chatWallpaper) {
-        // если обои есть то создаем элемент
         let wallpaper = document.getElementById('chat-wallpaper');
         if (!wallpaper) {
             wallpaper = document.createElement('div');
@@ -99,47 +87,41 @@ function applyWallpaper() {
         wallpaper.style.backgroundImage = `url(${SETTINGS_DATA.chatWallpaper})`;
         wallpaper.style.backgroundSize = 'cover';
         wallpaper.style.backgroundPosition = 'center';
+        wallpaper.style.position = 'fixed';
+        wallpaper.style.top = '0';
+        wallpaper.style.left = '0';
+        wallpaper.style.width = '100%';
+        wallpaper.style.height = '100%';
+        wallpaper.style.zIndex = '-1';
         wallpaper.style.filter = `blur(${SETTINGS_DATA.wallpaperBlur}px)`;
     } else {
-        // если нет обоев удаляем
         const wallpaper = document.getElementById('chat-wallpaper');
         if (wallpaper) wallpaper.remove();
     }
 }
 
 function applyGlassEffects() {
-    // эффект стекла применяем
     document.documentElement.style.setProperty('--glass-opacity', `${SETTINGS_DATA.glassOpacity}%`);
     document.documentElement.style.setProperty('--glass-blur', `${SETTINGS_DATA.glassBlur}px`);
-    // тоже применяем к body для быстрого эффекта
     document.body.style.setProperty('--glass-blur', `${SETTINGS_DATA.glassBlur}px`);
 }
 
 function initSettingsModal() {
-    const modal = document.getElementById('settings-modal');
     const openBtn = document.getElementById('open-settings');
     const closeBtn = document.getElementById('settings-close');
+    const modal = document.getElementById('settings-modal');
     const navItems = document.querySelectorAll('.settings-nav-item');
     const sections = document.querySelectorAll('.settings-section');
     
-    // открыть настройки
     openBtn?.addEventListener('click', () => {
         modal?.classList.add('active');
         loadSettingsToUI();
-        document.getElementById('main-menu').classList.remove('active');
-        initIcons();
     });
     
-    // закрыть настройки
     closeBtn?.addEventListener('click', () => {
         modal?.classList.remove('active');
     });
     
-    modal?.addEventListener('click', (e) => {
-        if (e.target === modal) modal.classList.remove('active');
-    });
-    
-    // навигация по вкладкам
     navItems.forEach(item => {
         item.addEventListener('click', () => {
             const section = item.dataset.section;
@@ -300,29 +282,74 @@ function initSettingsModal() {
             saveSettings();
         });
     });
+
+    // === LOGOUT BUTTON ===
+    const logoutBtn = document.getElementById('logout-btn');
+    logoutBtn?.addEventListener('click', () => {
+        if (typeof logout === 'function') {
+            logout();
+            document.getElementById('settings-modal').classList.remove('active');
+        }
+    });
+    
+    // === RESET DATABASE BUTTON ===
+    const resetDbBtn = document.getElementById('reset-database-btn');
+    resetDbBtn?.addEventListener('click', async () => {
+        if (!confirm('Вы уверены? Все чаты и сообщения будут удалены без возможности восстановления.')) {
+            return;
+        }
+        
+        try {
+            // Закрываем модалку настроек
+            document.getElementById('settings-modal').classList.remove('active');
+            
+            // Удаляем IndexedDB
+            const dbName = 'xcord_db';
+            const deleteRequest = indexedDB.deleteDatabase(dbName);
+            
+            deleteRequest.onsuccess = () => {
+                console.log('[Settings] IndexedDB deleted successfully');
+                showNotification('База данных сброшена. Обновляем страницу...');
+                
+                // Перезагружаем страницу через секунду
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            };
+            
+            deleteRequest.onerror = () => {
+                console.error('[Settings] Failed to delete IndexedDB');
+                showNotification('Ошибка при сбросе базы данных');
+            };
+            
+            deleteRequest.onblocked = () => {
+                console.warn('[Settings] Database deletion blocked - please close other tabs');
+                showNotification('Закрыть все вкладки с приложением и перезагрузите страницу');
+            };
+            
+        } catch (error) {
+            console.error('[Settings] Reset error:', error);
+            showNotification('Ошибка: ' + error.message);
+        }
+    });
 }
 
 function loadSettingsToUI() {
-    // Цвета
     document.getElementById('primary-color').value = SETTINGS_DATA.primaryColor;
     document.getElementById('secondary-color').value = SETTINGS_DATA.secondaryColor;
     
-    // Обои
     document.getElementById('wallpaper-blur').value = SETTINGS_DATA.wallpaperBlur;
     document.getElementById('wallpaper-blur-value').textContent = `${SETTINGS_DATA.wallpaperBlur}px`;
     
-    // Эффект стекла
     document.getElementById('glass-opacity').value = SETTINGS_DATA.glassOpacity;
     document.getElementById('glass-opacity-value').textContent = SETTINGS_DATA.glassOpacity;
     document.getElementById('glass-blur').value = SETTINGS_DATA.glassBlur;
     document.getElementById('glass-blur-value').textContent = SETTINGS_DATA.glassBlur;
     
-    // Анимации
     document.getElementById('enable-animations').checked = SETTINGS_DATA.enableAnimations;
     document.getElementById('enable-hover-effects').checked = SETTINGS_DATA.enableHoverEffects;
     document.getElementById('enable-glow-effects').checked = SETTINGS_DATA.enableGlowEffects;
     
-    // Масштаб
     document.getElementById('interface-scale').value = SETTINGS_DATA.interfaceScale;
     document.getElementById('interface-scale-value').textContent = SETTINGS_DATA.interfaceScale;
 }

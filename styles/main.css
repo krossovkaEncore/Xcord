@@ -45,11 +45,17 @@
     color: var(--text-muted);
     margin-left: 20px;
     cursor: pointer;
-    width: 22px;
-    height: 22px;
-    padding: 8px;
+    width: 40px;
+    height: 40px;
+    padding: 12px;
     border-radius: var(--radius-md);
     transition: all 0.2s ease;
+}
+
+.action-icon:hover {
+    color: var(--accent-primary);
+    background: var(--bg-modifier-hover);
+    transform: scale(1.1);
 }
 
 .action-icon:hover {
@@ -137,10 +143,35 @@
     white-space: pre-wrap;
 }
 
+/* Typing Indicator */
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 8px 0;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: 0s; }
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
 /* Input Area - Glass Style */
 .input-area {
     padding: 0 20px 24px;
     flex-shrink: 0;
+    width: 100%;
 }
 
 .input-wrapper {
@@ -154,6 +185,8 @@
     padding: 8px 8px 8px 16px;
     box-shadow: 0 8px 32px var(--glass-shadow);
     transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .input-wrapper:focus-within {

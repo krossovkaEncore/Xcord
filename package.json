@@ -1,0 +1,16 @@
+{
+  "name": "xcord",
+  "version": "1.0.0",
+  "description": "Xcord Web Messenger",
+  "scripts": {
+    "start": "echo 'Run core/app.py instead'",
+    "serve": "python core/app.py"
+  },
+  "keywords": [
+    "messenger",
+    "chat",
+    "p2p"
+  ],
+  "author": "NLP-Core-Team",
+  "license": "MIT"
+}

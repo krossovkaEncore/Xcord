@@ -13,8 +13,6 @@ REQUIRED_PACKAGES = {
     'fastapi': '0.109.0',
     'uvicorn': '0.27.0',
     'pydantic': '2.5.0',
-    'reticulum': '0.7.0',
-    'lxmf': '0.9.6',
     'pygame': '2.5.2',
     'gtts': '2.5.1',
     'openai': '1.10.0',

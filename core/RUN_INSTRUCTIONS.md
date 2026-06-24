@@ -1,10 +1,37 @@
 # Xcord Server - Инструкция по запуску
 
-## ⚠️ ВАЖНО: Не использовать venv!
+## Рекомендуется использовать venv!
 
-Всякие `venv`, `.venv`, `env` - **НЕ НУЖНЫ**! Jarvis установлен в глобальный Python.
+**Virtual Environment (venv)** - это правильная практика для Python проектов:
+- Изолирует зависимости проекта
+- Не загрязняет глобальный Python
+- Облегчает сборку и деплой
+- Гарантирует одинаковые версии у всех разработчиков
 
-## Быстрый запуск
+## Быстрый запуск (рекомендуется)
+
+### PowerShell (Windows) - С VENV
+```powershell
+.\scripts\setup-venv.ps1
+```
+
+Этот скрипт автоматически:
+- Создаст virtual environment (`venv/`)
+- Установит все Python зависимости
+- Проверит Node.js и установит npm пакеты
+- Запустит сервер
+
+### PowerShell (без venv)
+```powershell
+.\scripts\start-xcord.ps1
+```
+
+### Batch (Windows)
+```cmd
+.\scripts\start-xcord.bat
+```
+
+## Ручная установка с venv
 
 ### Вариант 1: PowerShell
 ```powershell
@@ -26,7 +53,7 @@ python app.py
 После запуска должен быть лог:
 ```
 ==================================================
-🚀 Запуск Xcord Core Server...
+Запуск Xcord Core Server...
 ==================================================
 [Javis] Module loaded successfully
 ...
@@ -63,4 +90,4 @@ python app.py
 
 ---
 
-**Готово!** 🚀
+Готово!

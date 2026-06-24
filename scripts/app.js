@@ -1,50 +1,29 @@
-// Xcord логика работы
-
-// Состояние
 let currentFilter = 'all';
-let activeChatId = CHATS[0].id; // по дефолту
-let isLightTheme = false; // состояние темы
+let activeChatId = 'jarvis';
+let isLightTheme = false;
 
-// Только если main.js еще не инициализировал
-if (typeof APP_STATE === 'undefined' || !APP_STATE.initialized) {
-    document.addEventListener('DOMContentLoaded', () => {
-        initIcons();
-        initBurgerMenu();
-        initTabs();
-        initProfileToggle();
-        initThemeToggle();
-        initFolderMenu();
+document.addEventListener('DOMContentLoaded', () => {
+    initIcons();
+    initBurgerMenu();
+    initTabs();
+    initFolderMenu();
+    initThemeToggle();
+    initProfileToggle();
+    initProfileModal();
+    
+    // Показываем Jarvis сразу (до инициализации p2p)
+    // updateContactsList вызывается из p2p-main.js после загрузки
+    renderChatList();
+    
+    // Jarvis открывается из p2p-main.js после инициализации
+});
 
-        // Профиль система
-        initProfileModal();
-        initImageCropEditor();
-        initFileUploads();
-
-        // Настройки система
-        if (typeof loadSettings === 'function') {
-            loadSettings();
-        }
-        if (typeof initSettingsModal === 'function') {
-            initSettingsModal();
-        }
-
-        // Первый рендер
-        renderChatList();
-        const activeChat = CHATS.find(c => c.id === activeChatId);
-        if (activeChat) {
-            renderChat(activeChat);
-        }
-    });
-}
-
-// 1. Иконки
 function initIcons() {
     if (window.lucide) {
         lucide.createIcons();
     }
 }
 
-// 2. Бургер меню
 function initBurgerMenu() {
     const burgerBtn = document.getElementById('burger-btn');
     const mainMenu = document.getElementById('main-menu');
@@ -63,7 +42,6 @@ function initBurgerMenu() {
     });
 }
 
-// 3. Табы (Горизонтальные) Логика - Glass iOS 26 Фильтр
 function initTabs() {
     const tabs = document.querySelectorAll('.filter-tab');
 
@@ -75,7 +53,6 @@ function initTabs() {
     });
 }
 
-// 4. Меню папок (выпадающее) Логика
 function initFolderMenu() {
     const folders = document.querySelectorAll('.folder-select');
     const mainMenu = document.getElementById('main-menu');
@@ -85,18 +62,14 @@ function initFolderMenu() {
             const filter = folder.dataset.filter;
             updateFilterUI(filter);
 
-            // Закрыть меню
             mainMenu.classList.remove('active');
         });
     });
 }
 
-// Объединенный обновлятор фильтра (синхронизирует табы и логическое состояние)
 function updateFilterUI(filterType) {
-    // 1. Обновляем состояние
     currentFilter = filterType;
 
-    // 2. Обновляем горизонтальные табы
     document.querySelectorAll('.filter-tab').forEach(t => {
         if (t.dataset.filter === filterType) {
             t.classList.add('active');
@@ -105,17 +78,13 @@ function updateFilterUI(filterType) {
         }
     });
 
-    // 3. Перерисовываем список чатов
     renderChatList();
 }
 
-
-// 5. Переключатель темы
 function initThemeToggle() {
     const toggleItem = document.getElementById('theme-toggle');
     const themeIndicator = document.getElementById('theme-indicator');
 
-    // Загрузить сохраненную тему
     const savedTheme = localStorage.getItem('xcord_theme');
     if (savedTheme === 'light') {
         isLightTheme = true;
@@ -130,89 +99,48 @@ function initThemeToggle() {
         isLightTheme = !isLightTheme;
         document.body.classList.toggle('theme-light', isLightTheme);
 
-        // Сохранить выбор темы
         localStorage.setItem('xcord_theme', isLightTheme ? 'light' : 'dark');
     });
 }
-
-
-// 6. Рендеринг списка чатов с фильтрацией как в Telegram
+    
 function renderChatList() {
     const chatListContainer = document.querySelector('.chat-list-content');
     if (!chatListContainer) return;
 
-    let filteredChats = [...CHATS];
+    // Вызываем обновление списка из p2p-main.js, если функция доступна
+    if (typeof updateContactsList === 'function') {
+        updateContactsList();
+    } else {
+        // Fallback: показываем только Jarvis до загрузки p2p-main.js
+        chatListContainer.innerHTML = `
+            <div class="chat-item jarvis-chat" onclick="if(typeof openJarvisChat==='function')openJarvisChat()">
+                <div class="avatar-wrapper">
+                    <img src="assets/avatars/jarvis.png" alt="Jarvis" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">
+                    <div class="status-indicator online"></div>
+                </div>
+                <div class="chat-info">
+                    <div class="chat-name-row">
+                        <span class="chat-name">Jarvis AI</span>
+                    </div>
+                    <div class="chat-preview">
+                        <span class="preview-text">AI Assistant</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+    }
     
-    // Фильтруем по текущему фильтру (стиль Telegram)
-    if (currentFilter === 'personal') {
-        filteredChats = filteredChats.filter(chat => chat.type === 'personal');
-    } else if (currentFilter === 'groups') {
-        filteredChats = filteredChats.filter(chat => chat.type === 'group' || chat.type === 'groups');
-    } else if (currentFilter === 'channels') {
-        filteredChats = filteredChats.filter(chat => chat.type === 'channel' || chat.type === 'channels' || chat.type === 'group');
-    }
-    // 'all' показывает всё
-
-    // Сортируем по последним (время последнего сообщения)
-    filteredChats.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
-
-    const pinnedChats = filteredChats.filter(c => c.pinned);
-    const regularChats = filteredChats.filter(c => !c.pinned);
-
-    chatListContainer.innerHTML = '';
-
-    if (pinnedChats.length > 0) {
-        const pinnedHeader = document.createElement('div');
-        pinnedHeader.className = 'list-section-header';
-        pinnedHeader.innerHTML = `<i data-lucide="pin" width="12" height="12"></i> <span>Pinned</span>`;
-        chatListContainer.appendChild(pinnedHeader);
-        pinnedChats.forEach(chat => chatListContainer.appendChild(createChatItem(chat)));
-
-        const divider = document.createElement('div');
-        divider.className = 'list-divider';
-        chatListContainer.appendChild(divider);
-    }
-
-    regularChats.forEach(chat => chatListContainer.appendChild(createChatItem(chat)));
     initIcons();
 }
 
-function createChatItem(chat) {
-    const item = document.createElement('div');
-    item.className = `chat-item ${chat.id === activeChatId ? 'active' : ''}`;
-    item.onclick = () => {
-        activeChatId = chat.id;
-        renderChatList();
-        renderChat(chat);
-    };
+// createChatItem удалена - чаты теперь только динамические (P2P пиры)
 
-    let avatarImg = `<img src="${chat.avatar}" alt="Avatar" class="avatar" style="object-fit:cover; object-position:${chat.avatarPos || 'center'}">`;
-
-    item.innerHTML = `
-        <div class="avatar-wrapper">
-            ${avatarImg}
-            <div class="status-indicator ${chat.unread > 0 ? 'online' : 'dnd'}"></div>
-        </div>
-        <div class="chat-info">
-            <div class="chat-name-row">
-                <span class="chat-name">${chat.name}</span>
-                <span class="chat-time">${chat.time}</span>
-            </div>
-            <div class="chat-preview">
-                <span class="preview-text">${chat.messages[chat.messages.length - 1]?.text || 'No messages'}</span>
-                ${chat.unread > 0 ? `<div class="unread-badge">${chat.unread}</div>` : ''}
-            </div>
-        </div>
-    `;
-    return item;
-}
-
-// 7. Рендеринг главного чата
 function renderChat(chat) {
     if (!chat) return;
 
     document.querySelector('.header-text h3').innerText = chat.name;
-    document.querySelector('.header-status').innerText = chat.type === 'channel' ? '1.2M subscribers' : 'last seen recently';
+    document.querySelector('.header-status').innerText = chat.type === 'channel' ? 'AI Assistant' : 'Online';
 
     const container = document.querySelector('.messages-container');
     container.innerHTML = '';
@@ -234,6 +162,13 @@ function renderChat(chat) {
         `;
         container.appendChild(msgGroup);
     });
+
+    const inputArea = document.getElementById('chat-input-area');
+    if (inputArea) {
+        inputArea.style.display = 'flex';
+    }
+
+    container.scrollTop = container.scrollHeight;
 }
 
 function initProfileToggle() {
@@ -245,19 +180,16 @@ function initProfileToggle() {
     });
 }
 
-// Профиль модальные функции - iOS 26 Glass
 function initProfileModal() {
     const modal = document.getElementById('profile-modal');
     const closeBtn = document.getElementById('profile-close');
     const menuProfileBtn = document.getElementById('menu-open-profile');
 
-    // Открыть из кнопки меню
     menuProfileBtn?.addEventListener('click', () => {
         openProfile();
-        document.getElementById('main-menu').classList.remove('active'); // Закрыть меню
+        document.getElementById('main-menu').classList.remove('active');
     });
 
-    // Открыть профиль с Ctrl+P
     document.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'p') {
             e.preventDefault();
@@ -265,12 +197,10 @@ function initProfileModal() {
         }
     });
 
-    // Отслеживаем если пользователь тянет
     let isDragging = false;
     let dragStartX = 0;
     let dragStartY = 0;
     
-    // Определяем начало перетаскивания
     modal?.addEventListener('mousedown', (e) => {
         isDragging = false;
         dragStartX = e.clientX;
@@ -285,21 +215,17 @@ function initProfileModal() {
         }
     });
     
-    // Закрыть обработчики
     closeBtn?.addEventListener('click', (e) => {
         e.stopPropagation();
         closeProfile();
     });
     
-    // Закрыть только при клике на оверлей, НЕ во время перетаскивания
     modal?.addEventListener('click', (e) => {
-        // Не закрывать если пользователь перетаскивал
         if (isDragging) {
             isDragging = false;
             return;
         }
         
-        // Не закрывать если кликнули на профиль карточку или её детей
         const profileCard = document.getElementById('profile-card');
         if (profileCard?.contains(e.target)) {
             return;
@@ -315,7 +241,6 @@ function openProfile() {
     const modal = document.getElementById('profile-modal');
     if (modal) {
         modal.classList.add('active');
-        // Обновить отображение и перезагрузить иконки
         if (typeof updateProfileDisplay === 'function') {
             updateProfileDisplay();
         }

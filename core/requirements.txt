@@ -1,23 +1,19 @@
 # Xcord Core Dependencies
+# Install with: pip install -r requirements.txt
 
 # Web Framework
-fastapi==0.109.0
-uvicorn==0.27.0
-pydantic==2.5.0
-python-multipart==0.0.6
+fastapi>=0.115.0
+uvicorn>=0.30.0
+pydantic>=2.9.0
+python-multipart>=0.0.12
 
-# Reticulum Network Stack - децентрализованная сеть
-reticulum==0.7.0
-lxmf==0.9.6
+# Auth & Security
+bcrypt>=4.1.0
 
-# Jarvis AI - упрощённая версия
-pygame==2.5.2
-gtts==2.5.1
-openai==1.10.0
-huggingface-hub==0.20.0
-SpeechRecognition==3.10.0
+# Jarvis AI
+# pygame==2.5.2  # ОТКЛЮЧЕНО - проблемы со сборкой
+gtts>=2.5.1
+openai>=1.50.0
+huggingface-hub>=0.25.0
+SpeechRecognition>=3.10.0
 
-# Удалены тяжёлые зависимости:
-# TTS==0.22.0 (медленная CoTTS)
-# torch==2.1.0 (нужен только для CoTTS)
-# numpy==1.26.0 (тяжёлый, не нужен для gTTS)

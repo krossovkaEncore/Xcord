@@ -1,4 +1,7 @@
-// Theme Settings Integration
+
+document.addEventListener('DOMContentLoaded', () => {
+    initThemeSettings();
+});
 
 function initThemeSettings() {
     const themeRadios = document.querySelectorAll('input[name=\"theme-select\"]');
@@ -9,14 +12,12 @@ function initThemeSettings() {
     const themeBlurSlider = document.getElementById('theme-wallpaper-blur');
     const themeBlurValue = document.getElementById('theme-wallpaper-blur-value');
 
-    // Theme selection
     themeRadios.forEach(radio => {
         radio.addEventListener('change', () => {
             applyTheme(radio.value);
         });
     });
 
-    // Create new theme
     createBtn?.addEventListener('click', () => {
         const themeId = createCustomTheme('Custom Theme');
         if (themeId) {
@@ -26,7 +27,6 @@ function initThemeSettings() {
         }
     });
 
-    // Save theme
     saveBtn?.addEventListener('click', () => {
         const slotIndex = parseInt(document.getElementById('theme-slot-index')?.value);
         if (slotIndex < 0 || slotIndex >= 5) return;
@@ -36,8 +36,7 @@ function initThemeSettings() {
             colors: {
                 bgPrimary: document.getElementById('theme-bgPrimary')?.value,
                 bgSecondary: document.getElementById('theme-bgSecondary')?.value,
-                accentPrimary: document.getElementById('theme-accentPrimary')?.value,
-                // Add more colors as needed
+                accentPrimary: document.getElementById('theme-accentPrimary')?.value
             },
             wallpaperBlur: parseInt(document.getElementById('theme-wallpaper-blur')?.value || 0)
         };
@@ -53,7 +52,6 @@ function initThemeSettings() {
         }, 2000);
     });
 
-    // Delete theme
     deleteBtn?.addEventListener('click', () => {
         const slotIndex = parseInt(document.getElementById('theme-slot-index')?.value);
         if (confirm('Удалить эту тему?')) {
@@ -62,7 +60,6 @@ function initThemeSettings() {
         }
     });
 
-    // Wallpaper upload
     themeWallpaperInput?.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -75,12 +72,10 @@ function initThemeSettings() {
         }
     });
 
-    // Blur slider
     themeBlurSlider?.addEventListener('input', () => {
         themeBlurValue.textContent = `${themeBlurSlider.value}px`;
     });
 
-    // Initial update
     updateCustomSlotLabels();
 }
 

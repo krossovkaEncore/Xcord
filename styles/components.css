@@ -238,11 +238,6 @@
     height: 14px;
 }
 
-/* Peer Hash Section */
-.peer-hash-section {
-    font-family: monospace;
-}
-
 /* Message Styles */
 .message {
     display: flex;
@@ -293,6 +288,32 @@
 
 .contact-item:hover {
     background: var(--bg-modifier-hover);
+}
+
+/* Online User Chat Item */
+.chat-item.online-user {
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.chat-item.online-user:hover {
+    background: rgba(74, 222, 128, 0.2);
+}
+
+.online-users-section {
+    margin: 8px 0;
+}
+
+.list-section-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .contact-avatar {
